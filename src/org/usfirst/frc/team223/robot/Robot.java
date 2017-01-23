@@ -4,6 +4,9 @@ package org.usfirst.frc.team223.robot;
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
 import org.usfirst.frc.team223.AdvancedX.motionControl.ButterflyHDrive;
+import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
+import org.usfirst.frc.team223.robot.hangar.Hangar;
+import org.usfirst.frc.team223.robot.intake.Intake;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -23,6 +26,8 @@ public class Robot extends IterativeRobot
 	// OI and Subsystems
 	public static OI oi;
 	public static ButterflyHDrive drive;
+	public static Hangar hangar;
+	public static Intake intake;
 	
 	
 	// AdvancedX Components
@@ -30,7 +35,7 @@ public class Robot extends IterativeRobot
 	public static RoboLogManagerBase logBase;
 	
 	// logging object (for Robot.java) only
-	private static Logger log;
+	static Logger log;
 	
 	private static NetworkTable nt;
 
@@ -70,7 +75,9 @@ public class Robot extends IterativeRobot
 					@Override
 					public boolean load() 
 					{
-						drive = new ButterflyHDrive(manager);
+						drive = new ButterflyHDrive(manager, new DriveFromController());
+						hangar = new Hangar(manager);
+						intake = new Intake(manager);
 						return true;
 					}
 

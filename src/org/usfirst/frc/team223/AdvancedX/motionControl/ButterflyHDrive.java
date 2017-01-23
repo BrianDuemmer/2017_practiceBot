@@ -8,6 +8,7 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
 import org.usfirst.frc.team223.AdvancedX.robotParser.SolenoidData;
 
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
@@ -63,19 +64,18 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	// Solenoids
 	private SolenoidData frontSolenoidData;
 	private Solenoid frontSolenoid;
-	private boolean invertFrontSolenoid;
 	
 	private SolenoidData rearSolenoidData;
 	private Solenoid rearSolenoid;
-	private boolean invertRearSolenoid;
 	
 	
 	////////////////// Utility //////////////////
 	private Logger log;
+	private Command defaultCommand;
 	
 	
 	
-	public ButterflyHDrive(AdvancedXManager manager)
+	public ButterflyHDrive(AdvancedXManager manager, Command defaultCommand)
 	{
 		// obtain the logger and parser
 		log = manager.getRoboLogger().getLogger("OmniHDrive");
@@ -84,6 +84,9 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		
 		// log us entering the parse routine
 		log.info("\r\n\r\n\r\n================= Initializing Butterfly H Drive =================");
+		
+		log.info("Default Command is: " + defaultCommand);
+		this.defaultCommand = defaultCommand;
 		
 		// parse the objects
 		this.leftSideData = parser.parseDriveSide("Drive/leftSide");
@@ -193,16 +196,17 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		return 0;
 	}
 	
-	@Override	protected void initDefaultCommand() {
-		// TODO Auto-generated method stub
-		
+	@Override	
+	protected void initDefaultCommand() 
+	{
+		setDefaultCommand(this.defaultCommand);
 	}
 
 
 
 
 
-	public driveType getCurrDriveType() {
+	public driveType getDriveType() {
 		return currDriveType;
 	}
 
@@ -215,7 +219,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	 * and which should be traction
 	 * @param currDriveType
 	 */
-	public void setCurrDriveType(driveType currDriveType) 
+	public void setDriveType(driveType currDriveType) 
 	{
 		// make sure a null hasn't been passed
 		if(currDriveType == null)
@@ -230,29 +234,29 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		// if front traction, set the rear wheels only as omni
 		if(currDriveType.equals(driveType.FRONT_TRACTION))
 		{
-			this.frontSolenoid.set(false ^ this.invertFrontSolenoid);
-			this.rearSolenoid.set(true ^ this.invertFrontSolenoid);
+			this.frontSolenoid.set(false ^ this.frontSolenoidData.invert);
+			this.rearSolenoid.set(true ^ this.rearSolenoidData.invert);
 		}
 		
 		// if rear traction, set the front wheels only as omni
 		else if(currDriveType.equals(driveType.REAR_TRACTION))
 		{
-			this.frontSolenoid.set(true ^ this.invertFrontSolenoid);
-			this.rearSolenoid.set(false ^ this.invertFrontSolenoid);
+			this.frontSolenoid.set(true ^ this.frontSolenoidData.invert);
+			this.rearSolenoid.set(false ^ this.rearSolenoidData.invert);
 		}
 		
 		// if full traction, set all wheels as traction
 		else if(currDriveType.equals(driveType.FULL_TRACTION))
 		{
-			this.frontSolenoid.set(false ^ this.invertFrontSolenoid);
-			this.rearSolenoid.set(false ^ this.invertFrontSolenoid);
+			this.frontSolenoid.set(false ^ this.frontSolenoidData.invert);
+			this.rearSolenoid.set(false ^ this.rearSolenoidData.invert);
 		}
 		
 		// if full omni, set all wheels as omni
 		else if(currDriveType.equals(driveType.FULL_OMNI))
 		{
-			this.frontSolenoid.set(true ^ this.invertFrontSolenoid);
-			this.rearSolenoid.set(true ^ this.invertFrontSolenoid);
+			this.frontSolenoid.set(true ^ this.frontSolenoidData.invert);
+			this.rearSolenoid.set(true ^ this.rearSolenoidData.invert);
 		}
 		
 		else

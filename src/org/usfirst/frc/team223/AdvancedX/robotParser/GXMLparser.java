@@ -348,6 +348,7 @@ public class GXMLparser
 			// parse out the elements
 			data.brake = (Boolean)getElementByName("brake", motorNode, BASIC_TYPE.BOOL);
 			data.id = (Integer)getElementByName("id", motorNode, BASIC_TYPE.INT);
+			data.pdpChannel = (Integer)getElementByName("pdpChannel", motorNode, BASIC_TYPE.INT);
 			data.invert = (Boolean)getElementByName("invert", motorNode, BASIC_TYPE.BOOL);
 			data.maxOut = (Double)getElementByName("maxOut", motorNode, BASIC_TYPE.DOUBLE);
 			data.type = (EnumPair)getElementByName("type", motorNode, BASIC_TYPE.ENUM);
