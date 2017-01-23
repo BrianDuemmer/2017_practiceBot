@@ -12,7 +12,7 @@ public interface OmniDirectionalDrive
 	/**
 	 * Sets the output of the driveTrain
 	 */
-	public void setOutput(double fwd, double strafe, double turn);
+	public void setRawOutput(double fwd, double strafe, double turn);
 	
 	/**
 	 * Gets the angle of the robot relative to the field

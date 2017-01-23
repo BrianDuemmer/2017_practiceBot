@@ -3,6 +3,7 @@ package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
+import org.usfirst.frc.team223.AdvancedX.motionControl.ButterflyHDrive;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.command.Scheduler;
@@ -21,7 +22,8 @@ public class Robot extends IterativeRobot
 {
 	// OI and Subsystems
 	public static OI oi;
-	public static 
+	public static ButterflyHDrive drive;
+	
 	
 	// AdvancedX Components
 	public static AdvancedXManager manager;
@@ -68,14 +70,14 @@ public class Robot extends IterativeRobot
 					@Override
 					public boolean load() 
 					{
-						
+						drive = new ButterflyHDrive(manager);
 						return true;
 					}
 
 					@Override
 					public boolean free() 
 					{
-						
+						drive.free();
 						return true;
 					}
 			
