@@ -75,7 +75,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	
 	
 	
-	public ButterflyHDrive(AdvancedXManager manager, Command defaultCommand)
+	public ButterflyHDrive(AdvancedXManager manager)
 	{
 		// obtain the logger and parser
 		log = manager.getRoboLogger().getLogger("OmniHDrive");
@@ -85,8 +85,6 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		// log us entering the parse routine
 		log.info("\r\n\r\n\r\n================= Initializing Butterfly H Drive =================");
 		
-		log.info("Default Command is: " + defaultCommand);
-		this.defaultCommand = defaultCommand;
 		
 		// parse the objects
 		this.leftSideData = parser.parseDriveSide("Drive/leftSide");
@@ -101,20 +99,30 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		log.info("Attempting to allocate objects...");
 		
 		// Allocate the objects
-		this.leftDriveSide = allocator.allocateDriveSide(this.leftSideData, "LeftSide");
-		this.rightDriveSide = allocator.allocateDriveSide(this.rightSideData, "RightSide");
-		this.centerDriveSide = allocator.allocateDriveSide(this.centerSideData, "CenterSide");
+		log.info("Allocating left side...");
+		this.leftDriveSide = allocator.allocateDriveSide(this.leftSideData, "leftSide");
+		log.info("Finished allocating left side");
+		
+		log.info("Allocating right side...");
+		this.rightDriveSide = allocator.allocateDriveSide(this.rightSideData, "rightSide");
+		log.info("Finished allocating right side");
+		
+		log.info("Allocating center side...");
+		this.centerDriveSide = allocator.allocateDriveSide(this.centerSideData, "centerSide");
+		log.info("Finished allocating center side");
 		
 		this.frontSolenoid = allocator.allocateSolenoid(this.frontSolenoidData);
 		this.rearSolenoid = allocator.allocateSolenoid(this.rearSolenoidData);
+		log.info("Finished allocating solenoids");
 		
+		log.info("Attempting to parse variables...");
 		
 		// Parse the variables
 		this.kFwdSlip = (Double)parser.getKeyByPath("Drive/kFwdSlip", BASIC_TYPE.DOUBLE);
 		this.kStrafeSlip = (Double)parser.getKeyByPath("Drive/kStrafeSlip", BASIC_TYPE.DOUBLE);
 		this.kMoonScalar = (Double)parser.getKeyByPath("Drive/kMoonScalar", BASIC_TYPE.DOUBLE);
 		
-		log.info("Finished allocating data");
+		log.info("Finished allocating ButterflyHDrive data");
 		
 	}
 	
@@ -134,7 +142,15 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	
 	
 	
-	
+	/**
+	 * Sets the default command for the {@link ButterflyHDrive}. Do not call this 
+	 * until after the subsystem has been initialized
+	 */
+	public void setDefaultCommand1(Command cmd)
+	{
+		this.defaultCommand = cmd;
+		this.setDefaultCommand(cmd);
+	}
 	
 	
 	

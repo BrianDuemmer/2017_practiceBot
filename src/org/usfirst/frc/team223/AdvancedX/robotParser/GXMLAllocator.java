@@ -307,8 +307,16 @@ public class GXMLAllocator {
 	// Log us entering the routine
 		logger.info("Attempting to allocate DriveSide...");
 		
-	// Initialize the DriveSide object to return
+	// Initialize the DriveSide object to return, and make sure the period is legal
+		if(data.pid.period <= 0)
+		{
+			logger.warn("Illegal value passes for PID period! Setting to default period instead.");
+			data.pid.period = PIDController.kDefaultPeriod;
+		}
+		
+		
 		DriveSide ret = new DriveSide(data.pid.period, manager.getRoboLogger().getLogger(name));
+		logger.info("Base DriveSide object created");
 		
 	// Configure the PID
 		ret.setPID(data.pid.kp, data.pid.ki, data.pid.kd, data.pid.kf);

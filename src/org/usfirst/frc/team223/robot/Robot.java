@@ -68,17 +68,25 @@ public class Robot extends IterativeRobot
     	}
 		
     	
-    	
+    	log.info("Preparing to start manager...");
 		// Setup the AdvancedXManager, and add the reload() and free() methods
 		manager = new AdvancedXManager("/media/sda1/MainConfig.xml", logBase, nt)
 				{
 					@Override
 					public boolean load() 
 					{
-						drive = new ButterflyHDrive(manager, new DriveFromController());
-						hangar = new Hangar(manager);
-						intake = new Intake(manager);
-						return true;
+						try 
+						{
+							drive = new ButterflyHDrive(manager);
+							drive.setDefaultCommand1(new DriveFromController());
+							hangar = new Hangar(manager);
+							intake = new Intake(manager);
+							return true;
+						} catch(Exception e)
+						{
+							log.fatal("Exception thrown while allocating robot data!", e);
+						}
+						return false;
 					}
 
 					@Override
@@ -90,7 +98,7 @@ public class Robot extends IterativeRobot
 			
 				};
 		
-		
+		manager.start(1000);
 		oi = new OI();
 
 	}
@@ -108,6 +116,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void disabledPeriodic() {
 		Scheduler.getInstance().run();
+		//log.info("foo");
 	}
 
 

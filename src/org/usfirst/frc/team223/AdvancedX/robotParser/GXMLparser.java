@@ -111,7 +111,7 @@ public class GXMLparser
 			key = (Node)expr.evaluate(doc, XPathConstants.NODE);
 			data = key.getTextContent();
 			
-			// Create a new object with type corresponding to the type argument
+			// Create a new object with type corresponding to the type argument, only if data isn't null
 			if(type == BASIC_TYPE.BOOL)
 				ret = new Boolean(data);
 			
@@ -133,9 +133,31 @@ public class GXMLparser
 			// print a message saying that this was successful
 			logger.info("Successfully parsed key \"" + path + "\" with value of: " +ret);
 			
-		} catch (XPathException e)
+		} catch (Exception e)
 		{
 			logger.warn("Failed to parse key \"" + path + "\". DETAILS: ", e);
+		}
+		
+		// if ret is null, return the default value
+		if(ret == null)
+		{
+			if(type == BASIC_TYPE.BOOL)
+				return false;
+			
+			else if(type == BASIC_TYPE.DOUBLE)
+				return 0.0;
+			
+			else if(type == BASIC_TYPE.ENUM)
+				return new EnumPair("", 0);
+			
+			else if(type == BASIC_TYPE.INT)
+				return 0;
+			
+			else if(type == BASIC_TYPE.STRING)
+				return "";
+			
+			else
+				logger.error("Unrecognized type passed to parse key");
 		}
 		
 		// Return the newly allocated object
@@ -455,7 +477,7 @@ public class GXMLparser
 		
 		// Print a warning if an error occurs
 		catch(Exception e){
-			logger.error("Failed to parse limit at path \"" + path + "\". DETAILS: ", e);
+			logger.error("Failed to parse Solenoid at path \"" + path + "\". DETAILS: ", e);
 		}
 		
 		// return the parsed values
@@ -544,13 +566,27 @@ public class GXMLparser
 			XPathExpression motorsExp;
 			NodeList motors;
 			
-			motorsExp = xpath.compile("GXML_Root/" + path + "/Motors/motor");
+			motorsExp = xpath.compile("GXML_Root/" + path + "/motors/motor");
 			motors = (NodeList)motorsExp.evaluate(doc, XPathConstants.NODESET);
 			
 			
-			// iterate through the motors and add them to the driveSide
-			for(int i = 1; i <= motors.getLength(); i++)
-				data.motors.add(parseMotor(path + "/Motors/motor[" + i + "]"));
+			// only parse as an array if there is more than 1 element
+			if(motors.getLength() > 1)
+			{
+				// iterate through the motors and add them to the driveSide
+				for(int i = 1; i <= motors.getLength(); i++)
+					data.motors.add(parseMotor(path + "/motors/motor[" + i + "]"));
+			} 
+			
+			// if there is only one motor, parse it as an element
+			else if(motors.getLength() == 1)
+				data.motors.add(parseMotor(path + "/motors/motor"));
+			
+			// If we get here, then something is wrong
+			else
+				logger.error("Bad number of motors parsed from DriveSide \"" +path+ "\"");
+			
+			
 			
 			// populate the data variable
 			data.pid = parsePID(path + "/PID");

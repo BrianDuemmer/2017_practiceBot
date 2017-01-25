@@ -42,6 +42,8 @@ public class DriveSide extends PIDSubsystem
 	/**
 	 * Constructor for the DriveSide. Make sure to configure the motors, PID, 
 	 * and PIDsource before use
+	 * <P/>
+	 * <b>WARNING: </b> Do not pass a non-positive value for the period!
 	 * @param period the time, in seconds, between PID updates
 	 */
 	public DriveSide(double period, Logger logger)

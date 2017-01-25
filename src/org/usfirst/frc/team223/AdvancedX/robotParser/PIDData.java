@@ -36,7 +36,11 @@ public class PIDData
 	/**
 	 * Default constructor
 	 */
-	public PIDData(){}
+	public PIDData()
+	{
+		// Set the period to a safe value
+		this.period = 0.02;
+	}
 	
 	public String toString()
 	{

@@ -23,6 +23,9 @@ import net.sf.microlog.core.Logger;
  * robot code. In addition, all instances of {@link GXMLparser} and
  * {@link GXMLAllocator} should be obtained using {@link #obtainParser}
  * and {@link #obtainAllocator}.
+ * <P/>
+ * 
+ * Be sure to call {@link start()} in your initialization code!
  * 
  * @author Brian Duemmer
  *
@@ -91,7 +94,8 @@ public abstract class AdvancedXManager implements Runnable
 
 		// initialize the logger
 		this.roboLogManagerBase = roboLogManagerBase;
-		this.logger = roboLogManagerBase.getLogger("GXMLManager_" + namespace);
+		this.logger = roboLogManagerBase.getLogger("AdvancedXManager_" + namespace);
+		this.logger.info("Starting AdvancedXManager...");
 
 		// construct the keys
 		this.handshakeKey = "CONFIGXML_" + this.namespace + "_RELOAD";
@@ -206,8 +210,7 @@ public abstract class AdvancedXManager implements Runnable
 		// loop infinitely for the duration of robot code
 		while(true)
 		{
-			// set to true initially so if something doesnt need to be run, it does not affect the outcome adversley
-			boolean success = true;
+			boolean success = false;
 
 			// see if the Dashboard has requested an update, or this is the first call. Reload if it did.
 			if(nt.getBoolean(handshakeKey, false) || this.firstRun)
@@ -225,15 +228,15 @@ public abstract class AdvancedXManager implements Runnable
 						logger.info("Attempting initial startup cycle...");
 
 					// Keep trying to reload data until it is successful, of it has tried 3 times
-					for(int i=0; i<3; i++)
+					for(int i=0; i<3 && !success; i++)
 					{
 						// only free() if not a first call, as the data wasn't loaded yet
 						if(!this.firstRun)
 						{
 							logger.info("Attempting to free data...");
-							logger.info("///////////////////////////////////////////////////////");
-							logger.info("//////////////////Shutting down Robot//////////////////");
-							logger.info("///////////////////////////////////////////////////////");
+							logger.info("\r\n\r\n\r\n\r\n======================================================="
+										+"\r\n================= Shutting Down Robot ================="
+										+"\r\n=======================================================";
 							try 
 							{
 								success = free();
@@ -249,9 +252,9 @@ public abstract class AdvancedXManager implements Runnable
 						try
 						{
 							logger.info("Attempting to load() data");
-							logger.info("///////////////////////////////////////////////////////");
-							logger.info("///////////////////Initializing Robot//////////////////");
-							logger.info("///////////////////////////////////////////////////////");
+							logger.info("\r\n\r\n\r\n\r\n=======================================================");
+							logger.info("================== Initializing Robot =================");
+							logger.info("=======================================================");
 
 							// both load() and free() must be successful in order for the cycle to be considered successful
 							success &= load();
@@ -270,6 +273,9 @@ public abstract class AdvancedXManager implements Runnable
 
 					// update the filename key to the value of the FILE_NAME attribute of the document.
 					nt.putString(fileNameKey, (String)this.obtainParser().getKeyByPath("FILE_NAME", BASIC_TYPE.STRING));
+					
+					// make sure firstRun is false
+					this.firstRun = false;
 					
 					// break if we were successful
 					if(success)
