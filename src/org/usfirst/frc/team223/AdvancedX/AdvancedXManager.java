@@ -236,7 +236,7 @@ public abstract class AdvancedXManager implements Runnable
 							logger.info("Attempting to free data...");
 							logger.info("\r\n\r\n\r\n\r\n======================================================="
 										+"\r\n================= Shutting Down Robot ================="
-										+"\r\n=======================================================";
+										+"\r\n=======================================================");
 							try 
 							{
 								success = free();
@@ -246,15 +246,19 @@ public abstract class AdvancedXManager implements Runnable
 								success = false;
 							}
 						} else 
+						{
 							logger.info("This is the first call, so free() was not called");
+							
+							// set to true so the following "success &= load() will still work
+							success = true;
+						}
 
 						// load() all of the data
 						try
 						{
-							logger.info("Attempting to load() data");
-							logger.info("\r\n\r\n\r\n\r\n=======================================================");
-							logger.info("================== Initializing Robot =================");
-							logger.info("=======================================================");
+							logger.info("\r\n\r\n\r\n\r\n======================================================="
+									+"\r\n================= Initializing Robot =================="
+									+"\r\n=======================================================");
 
 							// both load() and free() must be successful in order for the cycle to be considered successful
 							success &= load();
@@ -277,9 +281,9 @@ public abstract class AdvancedXManager implements Runnable
 					// make sure firstRun is false
 					this.firstRun = false;
 					
-					// break if we were successful
-					if(success)
-						break;
+//					// break if we were successful
+//					if(success)
+//						break;
 				}
 			}
 

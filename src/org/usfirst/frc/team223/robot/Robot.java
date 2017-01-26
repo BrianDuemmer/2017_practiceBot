@@ -9,6 +9,7 @@ import org.usfirst.frc.team223.robot.hangar.Hangar;
 import org.usfirst.frc.team223.robot.intake.Intake;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import net.sf.microlog.core.Level;
@@ -86,7 +87,7 @@ public class Robot extends IterativeRobot
 						{
 							log.fatal("Exception thrown while allocating robot data!", e);
 						}
-						return false;
+						return true;
 					}
 
 					@Override
@@ -116,7 +117,7 @@ public class Robot extends IterativeRobot
 	@Override
 	public void disabledPeriodic() {
 		Scheduler.getInstance().run();
-		//log.info("foo");
+		nt.putNumber("theTime", Timer.getFPGATimestamp());
 	}
 
 

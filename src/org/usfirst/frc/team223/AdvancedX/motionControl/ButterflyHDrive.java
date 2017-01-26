@@ -46,7 +46,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		FULL_OMNI
 	}
 	
-	private driveType currDriveType;
+	private driveType currDriveType = driveType.FULL_OMNI;
 	
 	
 	////////////// Physical Objects //////////////
@@ -168,7 +168,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		this.leftDriveSide.setRawOutput(fwd + turn);
 		this.rightDriveSide.setRawOutput(fwd - turn);
 		
-		if(this.centerSideData.equals(driveType.FULL_OMNI))
+		if(this.currDriveType == driveType.FULL_OMNI)
 			this.centerDriveSide.setRawOutput(strafe);
 		
 		else

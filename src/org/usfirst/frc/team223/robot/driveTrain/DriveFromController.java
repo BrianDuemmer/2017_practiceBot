@@ -21,14 +21,14 @@ public class DriveFromController extends Command {
     protected void execute() 
     {
     	// Set the traction mode
-    	if(Robot.oi.button_dR.get())
-    		Robot.drive.setDriveType(driveType.FULL_TRACTION);
-    	
-    	else if(Robot.oi.button_dL.get())
-    		Robot.drive.setDriveType(driveType.REAR_TRACTION);
-    	
-    	else
-    		Robot.drive.setDriveType(driveType.FULL_OMNI);
+//    	if(Robot.oi.button_dR.get())
+//    		Robot.drive.setDriveType(driveType.FULL_TRACTION);
+//    	
+//    	else if(Robot.oi.button_dL.get())
+//    		Robot.drive.setDriveType(driveType.REAR_TRACTION);
+//    	
+//    	else
+//    		Robot.drive.setDriveType(driveType.FULL_OMNI);
     	
     	
     	// set the Drive motor output
