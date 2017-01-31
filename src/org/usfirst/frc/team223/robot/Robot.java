@@ -87,13 +87,16 @@ public class Robot extends IterativeRobot
 						{
 							log.fatal("Exception thrown while allocating robot data!", e);
 						}
-						return true;
+						return false;
 					}
 
 					@Override
 					public boolean free() 
 					{
 						drive.free();
+						intake.free();
+						hangar.free();
+						
 						return true;
 					}
 			

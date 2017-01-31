@@ -17,6 +17,7 @@ public class Intake extends Subsystem
 	
 	private MotorData motorData;
 	private SpeedController motor;
+	private AdvancedXManager manager;
 	
 	Logger log;
 	
@@ -25,6 +26,7 @@ public class Intake extends Subsystem
 	{
 		log = manager.getRoboLogger().getLogger("INTAKE");
 		log.info("Initializing Intake Subsystem...");
+		this.manager = manager;
 		
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
@@ -36,6 +38,9 @@ public class Intake extends Subsystem
 	
 	public void free()
 	{
+		log.info("Attempting to free intake...");
+		manager.destroy(motor);
+		log.info("Finished freeing intake");
 	}
 
 

@@ -3,6 +3,9 @@ package org.usfirst.frc.team223.AdvancedX.motionControl;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
+import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
+
 import com.ctre.CANTalon;
 
 import edu.wpi.first.wpilibj.PIDSource;
@@ -20,7 +23,7 @@ import net.sf.microlog.core.Logger;
  * @author Brian Duemmer
  *
  */
-public class DriveSide extends PIDSubsystem
+public class DriveSide extends PIDSubsystem implements Freeable
 {
 	// Encoder object
 	PIDSource pidSrc;
@@ -38,6 +41,8 @@ public class DriveSide extends PIDSubsystem
 	// Object to log data about the driveside
 	private Logger logger;
 	
+	AdvancedXManager manager;
+	
 	
 	/**
 	 * Constructor for the DriveSide. Make sure to configure the motors, PID, 
@@ -46,11 +51,12 @@ public class DriveSide extends PIDSubsystem
 	 * <b>WARNING: </b> Do not pass a non-positive value for the period!
 	 * @param period the time, in seconds, between PID updates
 	 */
-	public DriveSide(double period, Logger logger)
+	public DriveSide(double period, AdvancedXManager manager, String name)
 	{
 		super(0, 0, 0, period);
 		
-		this.logger = logger;
+		this.logger = manager.getRoboLogger().getLogger(name);
+		this.manager = manager;
 		
 		motors = new ArrayList<SpeedController>();
 		
@@ -65,11 +71,12 @@ public class DriveSide extends PIDSubsystem
 	 * Constructor for the DriveSide. Make sure to configure the motors, PID, 
 	 * and PIDsource before use
 	 */
-	public DriveSide(Logger logger)
+	public DriveSide(AdvancedXManager manager, String name)
 	{
 		super(0, 0, 0);
 		
-		this.logger = logger;
+		this.logger = manager.getRoboLogger().getLogger(name);
+		this.manager = manager;
 		
 		motors = new ArrayList<SpeedController>();
 		
@@ -295,11 +302,35 @@ public class DriveSide extends PIDSubsystem
 	
 	
 	
-	
 	/**
 	 * Frees all of the resources allocated by the DriveSide
 	 */
 	public void free()
+	{
+		logger.info("Attempting to free DriveSide...");
+		
+		logger.info("Attempting to free PIDSource...");
+		this.manager.destroy(this.pidSrc);
+		logger.info("Finished freeing PIDSource");
+		
+		logger.info("Attempting to free PIDController...");
+		this.manager.destroy(this.getPIDController());
+		logger.info("Finished freeing PIDController");
+		
+		logger.info("Attempting to free motors...");
+		for(SpeedController i: this.motors)
+			this.manager.destroy(i);
+		logger.info("Finished freeing motors");
+	}
+	
+	
+	
+	
+	/**
+	 * Frees all of the resources allocated by the DriveSide
+	 * @deprecated Use {@link DriveSide#free() free()} instead
+	 */
+	public void _free()
 	{
 		
 		logger.info("Attempting to free DriveSide...");

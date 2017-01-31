@@ -1,6 +1,7 @@
 package org.usfirst.frc.team223.AdvancedX;
 
 
+import org.usfirst.frc.team223.AdvancedX.robotParser.Destroyer;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
@@ -34,9 +35,11 @@ public abstract class AdvancedXManager implements Runnable
 {
 	// Active parser object, bound to the document
 	private GXMLparser parserRef;
-	
+
 	// Active Allocator object
 	private GXMLAllocator allocator;
+
+	private Destroyer destroyer;
 
 	// name of the NetworkTables key name that will be used for handshaking
 	private String handshakeKey;
@@ -103,6 +106,8 @@ public abstract class AdvancedXManager implements Runnable
 		this.successKey = "CONFIGXML_" + this.namespace + "_SUCCESS";
 
 		this.nt = nt;
+
+		this.destroyer = new Destroyer(this.roboLogManagerBase.getLogger("DESTROYER"));
 	}
 
 
@@ -202,7 +207,7 @@ public abstract class AdvancedXManager implements Runnable
 	/**
 	 * periodically check if the Dashboard has requested
 	 * a config reload. If it did, call the {@link #reload()} method.
-	 * Update NT keys as necessary
+	 * Updates NT keys as necessary
 	 */
 	@Override
 	public void run()
@@ -227,71 +232,69 @@ public abstract class AdvancedXManager implements Runnable
 					else
 						logger.info("Attempting initial startup cycle...");
 
-					// Keep trying to reload data until it is successful, of it has tried 3 times
-					for(int i=0; i<3 && !success; i++)
+					// only free() if not a first call, as the data wasn't loaded yet
+					if(!this.firstRun)
 					{
-						// only free() if not a first call, as the data wasn't loaded yet
-						if(!this.firstRun)
+						logger.info("Attempting to free data...");
+						logger.info("\r\n\r\n\r\n\r\n======================================================="
+								+"\r\n================= Shutting Down Robot ================="
+								+"\r\n=======================================================");
+						try 
 						{
-							logger.info("Attempting to free data...");
-							logger.info("\r\n\r\n\r\n\r\n======================================================="
-										+"\r\n================= Shutting Down Robot ================="
-										+"\r\n=======================================================");
-							try 
-							{
-								success = free();
-								logger.info("Shutdown cycle finished with success status: " + success);
-							} catch (Exception e) {
-								logger.error("Error during shutdown cycle. DETAILS:", e);
-								success = false;
-							}
-						} else 
-						{
-							logger.info("This is the first call, so free() was not called");
-							
-							// set to true so the following "success &= load() will still work
-							success = true;
-						}
+							// Reset the destroyer
+							this.destroyer.clearDestroyed();
 
-						// load() all of the data
-						try
-						{
-							logger.info("\r\n\r\n\r\n\r\n======================================================="
-									+"\r\n================= Initializing Robot =================="
-									+"\r\n=======================================================");
-
-							// both load() and free() must be successful in order for the cycle to be considered successful
-							success &= load();
-						} catch(Exception e) {
-							logger.error("Exception encountered during load()! DETAILS: ", e);
+							success = free();
+							logger.info("Shutdown cycle finished with success status: " + success);
+						} catch (Exception e) {
+							logger.error("Error during shutdown cycle. DETAILS:", e);
 							success = false;
 						}
+					} else 
+					{
+						logger.info("This is the first call, so free() was not called");
 
-						// Set the success flag to the return value from reload()
-						nt.putBoolean(successKey, success);
-						logger.info("Reload cycle finished with success status: " +success);
+						// set to true so the following "success &= load()" will still work
+						success = true;
 					}
 
-					// Set the handshake flag to false
-					nt.putBoolean(handshakeKey, false);
+					// load() all of the data
+					try
+					{
+						logger.info("\r\n\r\n\r\n\r\n======================================================="
+								+"\r\n================= Initializing Robot =================="
+								+"\r\n=======================================================");
+						
+						// Clear the parser so it is forced to re-open the file
+						this.parserRef = null;
 
-					// update the filename key to the value of the FILE_NAME attribute of the document.
-					nt.putString(fileNameKey, (String)this.obtainParser().getKeyByPath("FILE_NAME", BASIC_TYPE.STRING));
-					
-					// make sure firstRun is false
-					this.firstRun = false;
-					
-//					// break if we were successful
-//					if(success)
-//						break;
+						// both load() and free() must be successful in order for the cycle to be considered successful
+						success &= load();
+					} catch(Exception e) {
+						logger.error("Exception encountered during load()! DETAILS: ", e);
+						success = false;
+					}
+
+					// Set the success flag to the return value from reload()
+					nt.putBoolean(successKey, success);
+					logger.info("Reload cycle finished with success status: " +success);
 				}
-			}
 
-			// make sure that firstRun will always be false after this
-			this.firstRun = false;
+				// Set the handshake flag to false
+				nt.putBoolean(handshakeKey, false);
+
+				// update the filename key to the value of the FILE_NAME attribute of the document.
+				nt.putString(fileNameKey, (String)this.obtainParser().getKeyByPath("FILE_NAME", BASIC_TYPE.STRING));
+
+				// make sure firstRun is false
+				this.firstRun = false;
+			}
 
 			// delay for the necessary time, converting from ms to seconds
 			Timer.delay(((double)this.updateRate) / 1000.0);
+//			logger.info("HandshakeKey: " + nt.getBoolean(handshakeKey, false));
+//			logger.info("ContainsReload: " + nt.containsKey(handshakeKey));
+			logger.info(nt.getString("myString", "not found"));
 		}
 	}
 
@@ -338,6 +341,18 @@ public abstract class AdvancedXManager implements Runnable
 	public NetworkTable getNt() {
 		return nt;
 	}
+
+
+
+
+	/**
+	 * @See {@link Destroyer}
+	 */
+	public boolean destroy(Object obj)
+	{
+		return this.destroyer.destroy(obj);
+	}
+
 }
 
 

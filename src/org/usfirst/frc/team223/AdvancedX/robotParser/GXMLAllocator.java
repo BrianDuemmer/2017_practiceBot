@@ -258,7 +258,7 @@ public class GXMLAllocator {
 	{
 		logger.info("Allocating new InterruptableLimit...");
 
-		// See if the handler ommand is null, print a warning if it is
+		// See if the handler command is null, print a warning if it is
 		if(handlerCommand == null)
 			logger.error("Handler Command for InterruptableLimit is null!");
 
@@ -344,7 +344,7 @@ public class GXMLAllocator {
 
 		try
 		{
-			ret = new DriveSide(data.pid.period, manager.getRoboLogger().getLogger(name));
+			ret = new DriveSide(data.pid.period, manager, name);
 			logger.info("Base DriveSide object created");
 
 			// Configure the PID

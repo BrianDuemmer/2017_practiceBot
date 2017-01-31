@@ -2,6 +2,7 @@ package org.usfirst.frc.team223.AdvancedX.motionControl;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.robotParser.DriveSideData;
+import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
@@ -17,7 +18,7 @@ import net.sf.microlog.core.Logger;
  * @author develoer
  *
  */
-public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive 
+public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, Freeable 
 {
 	/////////// Constants and scalars ////////////
 	
@@ -72,6 +73,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	////////////////// Utility //////////////////
 	private Logger log;
 	private Command defaultCommand;
+	private AdvancedXManager manager;
 	
 	
 	
@@ -81,6 +83,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 		log = manager.getRoboLogger().getLogger("OmniHDrive");
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
+		
+		this.manager = manager;
 		
 		// log us entering the parse routine
 		log.info("\r\n\r\n\r\n================= Initializing Butterfly H Drive =================");
@@ -132,12 +136,27 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive
 	
 	public void free()
 	{
-		this.leftDriveSide.free();
-		this.rightDriveSide.free();
-		this.centerDriveSide.free();
+		log.info("Attempting to free ButterflyHDrive...");
 		
-		this.frontSolenoid.free();
-		this.rearSolenoid.free();
+		log.info("Attempting to free Center DriveSide...");
+		this.manager.destroy(centerDriveSide);
+		log.info("Finished freeing center DriveSide");
+		
+		log.info("Attempting to free Left DriveSide...");
+		this.manager.destroy(leftDriveSide);
+		log.info("Finished freeing Left DriveSide");
+		
+		
+		log.info("Attempting to free Right DriveSide...");
+		this.manager.destroy(rightDriveSide);
+		log.info("Finished freeing Right DriveSide");
+		
+		log.info("Attempting to free Solenoids...");
+		this.manager.destroy(frontSolenoid);
+		this.manager.destroy(rearSolenoid);
+		log.info("Finished freeing Solenoids");
+		
+		log.info("Finished freeing ButterflyHDrive");
 	}
 	
 	

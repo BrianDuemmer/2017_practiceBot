@@ -17,6 +17,7 @@ public class Hangar extends Subsystem
 	
 	private MotorData motorData;
 	private SpeedController motor;
+	private AdvancedXManager manager;
 	
 	Logger log;
 	
@@ -28,6 +29,7 @@ public class Hangar extends Subsystem
 		
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
+		this.manager = manager;
 		
 		this.motorData = parser.parseMotor("hangarMotor");
 		this.motor = allocator.allocateMotor(this.motorData);
@@ -36,6 +38,9 @@ public class Hangar extends Subsystem
 	
 	public void free()
 	{
+		log.info("Attempting to free hangar...");
+		manager.destroy(motor);
+		log.info("Finished freeing hangar");
 	}
 
 

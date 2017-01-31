@@ -1,6 +1,7 @@
 package org.usfirst.frc.team223.AdvancedX.motionControl;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
+import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
 import org.usfirst.frc.team223.AdvancedX.utility.AngleUtil;
 
 import edu.wpi.first.wpilibj.PIDController;
@@ -17,7 +18,7 @@ import net.sf.microlog.core.Logger;
  * @author Brian Duemmer
  *
  */
-public class TankCascadeController
+public class TankCascadeController implements Freeable
 {
     
     // DriveSides
@@ -49,6 +50,7 @@ public class TankCascadeController
     
     // object to log data output
     private Logger logger;
+    private AdvancedXManager manager;
     
     
     
@@ -301,6 +303,7 @@ public class TankCascadeController
 	public TankCascadeController(DriveSide leftSide, DriveSide rightSide, Gyro gyro, double distPidPeriod, double anglePidPeriod, AdvancedXManager manager)
 	{
 		this.logger = manager.getRoboLogger().getLogger("TankCascadeController");
+		this.manager = manager;
 		
 		// Make sure the variables are not illegal values
 		if(distPidPeriod <= 0)
@@ -605,31 +608,31 @@ public class TankCascadeController
     	// free the resources
 		if(this.leftSide != null)
 		{
-			this.leftSide.free();
+			this.manager.destroy(this.leftSide);
 			logger.info("Finished shutting down left side");
 		}
 		
 		if(this.rightSide != null)
 		{
-			this.rightSide.free();
+			this.manager.destroy(this.rightSide);
 			logger.info("Finished shutting down right side");
 		}
 		
 		if(this.gyro != null)
 		{
-			this.gyro.free();
+			this.manager.destroy(this.gyro);
 			logger.info("Finished shutting down Gyro");
 		}
 		
 		if(this.posPID != null)
 		{
-			this.posPID.free();
+			this.manager.destroy(this.posPID);
 			logger.info("Finished freeing position PID");
 		}
 		
 		if(this.turnPID != null)
 		{
-			this.turnPID.free();
+			this.manager.destroy(this.turnPID);
 			logger.info("Finished freeing turn PID");
 		}
 	}
