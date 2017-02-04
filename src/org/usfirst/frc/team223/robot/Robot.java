@@ -7,6 +7,7 @@ import org.usfirst.frc.team223.AdvancedX.motionControl.ButterflyHDrive;
 import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
 import org.usfirst.frc.team223.robot.hangar.Hangar;
 import org.usfirst.frc.team223.robot.intake.Intake;
+import org.usfirst.frc.team223.robot.shooter.Shooter;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
 import edu.wpi.first.wpilibj.Timer;
@@ -26,18 +27,20 @@ public class Robot extends IterativeRobot
 {
 	// OI and Subsystems
 	public static OI oi;
+	
 	public static ButterflyHDrive drive;
 	public static Hangar hangar;
 	public static Intake intake;
-	
-	
+	public static Shooter shooter;
+
+
 	// AdvancedX Components
 	public static AdvancedXManager manager;
 	public static RoboLogManagerBase logBase;
-	
+
 	// logging object (for Robot.java) only
 	static Logger log;
-	
+
 	private static NetworkTable nt;
 
 
@@ -52,56 +55,37 @@ public class Robot extends IterativeRobot
 		// Setup the logger
 		logBase = new RoboLogManagerBase("/media/sda1/logging17", 5801, Level.WARN);
 		log = logBase.getLogger("ROBOT");
-		
-		
-    	// attempt to initialize NetworkTables
-    	log.info("Attempting to initialize NetworkTables...");
-    	try
-    	{
-    		NetworkTable.setServerMode();
-    		NetworkTable.setPort(1735);
-    		NetworkTable.initialize();
-    		nt = NetworkTable.getTable("SmartDashboard");
-    		log.info("Successfully initialized NetworkTables");
-    	} 
-    	catch(Exception e){
-    		log.fatal("Failed to initialize networkTables! DETAILS: ", e);
-    	}
-		
-    	
-    	log.info("Preparing to start manager...");
-		// Setup the AdvancedXManager, and add the reload() and free() methods
-		manager = new AdvancedXManager("/media/sda1/MainConfig.xml", logBase, nt)
-				{
-					@Override
-					public boolean load() 
-					{
-						try 
-						{
-							drive = new ButterflyHDrive(manager);
-							drive.setDefaultCommand1(new DriveFromController());
-							hangar = new Hangar(manager);
-							intake = new Intake(manager);
-							return true;
-						} catch(Exception e)
-						{
-							log.fatal("Exception thrown while allocating robot data!", e);
-						}
-						return false;
-					}
 
-					@Override
-					public boolean free() 
-					{
-						drive.free();
-						intake.free();
-						hangar.free();
-						
-						return true;
-					}
-			
-				};
-		
+
+		// Setup the AdvancedXManager, and add the reload() and free() methods
+		manager = new AdvancedXManager("/media/sda1/MainConfig.xml", logBase)
+		{
+			@Override
+			public boolean load() 
+			{
+				drive = new ButterflyHDrive(manager);
+				drive.setDefaultCommand(new DriveFromController());
+				hangar = new Hangar(manager);
+				intake = new Intake(manager);
+				shooter = new Shooter(manager);
+				return true;
+			}
+
+			@Override
+			public boolean free() 
+			{
+				drive.free();
+				intake.free();
+				hangar.free();
+				shooter.free();
+
+				return true;
+			}
+
+		};
+
+		nt = manager.getNt();
+
 		manager.start(1000);
 		oi = new OI();
 

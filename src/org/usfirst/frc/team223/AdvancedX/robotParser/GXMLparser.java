@@ -2,13 +2,13 @@ package org.usfirst.frc.team223.AdvancedX.robotParser;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathException;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathFactory;
 
@@ -44,6 +44,15 @@ public class GXMLparser
 	
 	// logger object to print messages
 	Logger logger;
+	
+	
+	// list of all parsed data structures
+//	private Hashtable<MotorData, String> parsedMotors;
+//	private Hashtable<PIDData, String> parsedPIDs;
+//	private Hashtable<EncoderData, String> parsedEncoders;
+//	private Hashtable<LimitData, String> parsedLimits;
+//	private Hashtable<SolenoidData, String> parsedSolenoids;
+//	private Hashtable<DriveSideData, String> parsedDriveSides;
 	
 	
 	

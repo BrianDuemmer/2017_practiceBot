@@ -1,6 +1,7 @@
 package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.utility.SmartControlStick;
+import org.usfirst.frc.team223.robot.shooter.ShooterNoVision;
 
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
@@ -85,7 +86,7 @@ public OI() {
 
 		
 		////////////////////////// Operator Buttons ///////////////////////////
-		
+		button_oR.whenActive(new ShooterNoVision());
 
 
 	}

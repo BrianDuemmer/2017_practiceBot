@@ -87,7 +87,7 @@ public abstract class AdvancedXManager implements Runnable
 	 * @param nt the {@link NetworkTables} that can communicate with the dashboard. This is necessary for 
 	 * handshaking between the robot and the dashboard
 	 */
-	public AdvancedXManager(String fileName, RoboLogManagerBase roboLogManagerBase, NetworkTable nt)
+	public AdvancedXManager(String fileName, RoboLogManagerBase roboLogManagerBase)
 	{
 		// update instance variables
 		this.fileName = fileName;
@@ -99,13 +99,28 @@ public abstract class AdvancedXManager implements Runnable
 		this.roboLogManagerBase = roboLogManagerBase;
 		this.logger = roboLogManagerBase.getLogger("AdvancedXManager_" + namespace);
 		this.logger.info("Starting AdvancedXManager...");
+		
+		
+    	// attempt to initialize NetworkTables
+    	logger.info("Attempting to initialize NetworkTables...");
+    	try
+    	{
+    		NetworkTable.setServerMode();
+    		NetworkTable.setPort(1735);
+    		NetworkTable.initialize();
+    		nt = NetworkTable.getTable("SmartDashboard");
+    		logger.info("Successfully initialized NetworkTables");
+    	} 
+    	catch(Exception e){
+    		logger.fatal("Failed to initialize networkTables! DETAILS: ", e);
+    	}
+    	
+    	
 
 		// construct the keys
 		this.handshakeKey = "CONFIGXML_" + this.namespace + "_RELOAD";
 		this.fileNameKey = "CONFIGXML_" + this.namespace + "_FILENAME";
 		this.successKey = "CONFIGXML_" + this.namespace + "_SUCCESS";
-
-		this.nt = nt;
 
 		this.destroyer = new Destroyer(this.roboLogManagerBase.getLogger("DESTROYER"));
 	}
@@ -291,10 +306,17 @@ public abstract class AdvancedXManager implements Runnable
 			}
 
 			// delay for the necessary time, converting from ms to seconds
-			Timer.delay(((double)this.updateRate) / 1000.0);
+			try {
+				Thread.sleep(updateRate);
+			} catch (InterruptedException e) {
+				logger.info("Error in delay:   ", e);
+			}
+			
+			
+			
 //			logger.info("HandshakeKey: " + nt.getBoolean(handshakeKey, false));
 //			logger.info("ContainsReload: " + nt.containsKey(handshakeKey));
-			logger.info(nt.getString("myString", "not found"));
+//			logger.info(nt.getString("myString", "not found"));
 		}
 	}
 

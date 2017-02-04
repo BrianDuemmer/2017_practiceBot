@@ -141,7 +141,9 @@ public class LinearFeedInterpolator
 	public double getTargetVel()
 	{
 		if(moveType == 3)
-			return calcVType3(); 
+			return calcVType3();
+		return 0; 
+		
 	}
 	
 	
@@ -151,6 +153,7 @@ public class LinearFeedInterpolator
 	{
 		if(moveType == 3)
 			return calcSType3();
+		return 0;
 		
 	}
 	

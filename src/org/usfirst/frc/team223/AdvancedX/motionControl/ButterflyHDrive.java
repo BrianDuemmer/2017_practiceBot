@@ -165,10 +165,10 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	 * Sets the default command for the {@link ButterflyHDrive}. Do not call this 
 	 * until after the subsystem has been initialized
 	 */
-	public void setDefaultCommand1(Command cmd)
+	public void setDefaultCommand(Command cmd)
 	{
 		this.defaultCommand = cmd;
-		this.setDefaultCommand(cmd);
+		super.setDefaultCommand(cmd);
 	}
 	
 	

@@ -31,7 +31,7 @@ public class Intake extends Subsystem
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
 		
-		this.motorData = parser.parseMotor("intakeMotor");
+		this.motorData = parser.parseMotor("Intake/motor");
 		this.motor = allocator.allocateMotor(this.motorData);
 	}
 	
@@ -47,7 +47,7 @@ public class Intake extends Subsystem
 
     public void initDefaultCommand() 
     {
-
+    	
     }
     
     
