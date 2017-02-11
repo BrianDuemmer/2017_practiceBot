@@ -99,23 +99,23 @@ public abstract class AdvancedXManager implements Runnable
 		this.roboLogManagerBase = roboLogManagerBase;
 		this.logger = roboLogManagerBase.getLogger("AdvancedXManager_" + namespace);
 		this.logger.info("Starting AdvancedXManager...");
-		
-		
-    	// attempt to initialize NetworkTables
-    	logger.info("Attempting to initialize NetworkTables...");
-    	try
-    	{
-    		NetworkTable.setServerMode();
-    		NetworkTable.setPort(1735);
-    		NetworkTable.initialize();
-    		nt = NetworkTable.getTable("SmartDashboard");
-    		logger.info("Successfully initialized NetworkTables");
-    	} 
-    	catch(Exception e){
-    		logger.fatal("Failed to initialize networkTables! DETAILS: ", e);
-    	}
-    	
-    	
+
+
+		// attempt to initialize NetworkTables
+		logger.info("Attempting to initialize NetworkTables...");
+		try
+		{
+			NetworkTable.setServerMode();
+			NetworkTable.setPort(1735);
+			NetworkTable.initialize();
+			nt = NetworkTable.getTable("SmartDashboard");
+			logger.info("Successfully initialized NetworkTables");
+		} 
+		catch(Exception e){
+			logger.fatal("Failed to initialize networkTables! DETAILS: ", e);
+		}
+
+
 
 		// construct the keys
 		this.handshakeKey = "CONFIGXML_" + this.namespace + "_RELOAD";
@@ -170,7 +170,15 @@ public abstract class AdvancedXManager implements Runnable
 		// if the parserRef is null, allocate a new instance of it. If it is not,
 		// use the existing parserRef
 		if(this.parserRef == null)
-			this.parserRef = new GXMLparser(fileName, roboLogManagerBase);
+			try
+		{
+				this.parserRef = new GXMLparser(fileName, roboLogManagerBase);
+		} catch (Exception e)
+		{
+			logger.error("Error allocating parser! ", e);
+		}
+		
+		logger.info("Parser is: " + parserRef);
 
 		return this.parserRef;
 	}
@@ -261,7 +269,7 @@ public abstract class AdvancedXManager implements Runnable
 
 							success = free();
 							logger.info("Shutdown cycle finished with success status: " + success);
-						} catch (Exception e) {
+						} catch (Throwable e) {
 							logger.error("Error during shutdown cycle. DETAILS:", e);
 							success = false;
 						}
@@ -279,13 +287,13 @@ public abstract class AdvancedXManager implements Runnable
 						logger.info("\r\n\r\n\r\n\r\n======================================================="
 								+"\r\n================= Initializing Robot =================="
 								+"\r\n=======================================================");
-						
+
 						// Clear the parser so it is forced to re-open the file
 						this.parserRef = null;
 
 						// both load() and free() must be successful in order for the cycle to be considered successful
 						success &= load();
-					} catch(Exception e) {
+					} catch(Throwable e) {
 						logger.error("Exception encountered during load()! DETAILS: ", e);
 						success = false;
 					}
@@ -311,12 +319,12 @@ public abstract class AdvancedXManager implements Runnable
 			} catch (InterruptedException e) {
 				logger.info("Error in delay:   ", e);
 			}
-			
-			
-			
-//			logger.info("HandshakeKey: " + nt.getBoolean(handshakeKey, false));
-//			logger.info("ContainsReload: " + nt.containsKey(handshakeKey));
-//			logger.info(nt.getString("myString", "not found"));
+
+
+
+			//			logger.info("HandshakeKey: " + nt.getBoolean(handshakeKey, false));
+			//			logger.info("ContainsReload: " + nt.containsKey(handshakeKey));
+			//			logger.info(nt.getString("myString", "not found"));
 		}
 	}
 

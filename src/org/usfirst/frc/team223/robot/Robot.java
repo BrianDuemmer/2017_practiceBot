@@ -3,10 +3,11 @@ package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
-import org.usfirst.frc.team223.AdvancedX.motionControl.ButterflyHDrive;
+import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive;
 import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
 import org.usfirst.frc.team223.robot.hangar.Hangar;
 import org.usfirst.frc.team223.robot.intake.Intake;
+import org.usfirst.frc.team223.robot.intake.IntakeControl;
 import org.usfirst.frc.team223.robot.shooter.Shooter;
 
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -62,12 +63,18 @@ public class Robot extends IterativeRobot
 		{
 			@Override
 			public boolean load() 
-			{
-				drive = new ButterflyHDrive(manager);
-				drive.setDefaultCommand(new DriveFromController());
-				hangar = new Hangar(manager);
+			{	
+				
 				intake = new Intake(manager);
+				hangar = new Hangar(manager);
 				shooter = new Shooter(manager);
+				drive = new ButterflyHDrive(manager);
+				
+				drive.setDefaultCommand(new DriveFromController());
+				intake.setDefaultCommand(new IntakeControl());
+				
+				oi = new OI();
+				
 				return true;
 			}
 
@@ -87,7 +94,6 @@ public class Robot extends IterativeRobot
 		nt = manager.getNt();
 
 		manager.start(1000);
-		oi = new OI();
 
 	}
 

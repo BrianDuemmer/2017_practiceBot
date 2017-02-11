@@ -1,6 +1,7 @@
 package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.utility.SmartControlStick;
+import org.usfirst.frc.team223.robot.hangar.HangControl;
 import org.usfirst.frc.team223.robot.shooter.ShooterNoVision;
 
 import edu.wpi.first.wpilibj.Joystick;
@@ -86,7 +87,8 @@ public OI() {
 
 		
 		////////////////////////// Operator Buttons ///////////////////////////
-		button_oR.whenActive(new ShooterNoVision());
+		button_oR.whileActive(new ShooterNoVision());
+		button_oL.whileActive(new HangControl());
 
 
 	}

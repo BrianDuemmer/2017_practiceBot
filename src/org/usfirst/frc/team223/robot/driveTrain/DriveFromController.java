@@ -1,7 +1,7 @@
 package org.usfirst.frc.team223.robot.driveTrain;
 
-import org.usfirst.frc.team223.AdvancedX.motionControl.ButterflyHDrive.driveType;
 import org.usfirst.frc.team223.robot.Robot;
+import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive.driveType;
 
 import edu.wpi.first.wpilibj.command.Command;
 
@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj.command.Command;
  * Drives the robot from a controller
  */
 public class DriveFromController extends Command {
+	
 
     public DriveFromController() 
     {
@@ -21,14 +22,14 @@ public class DriveFromController extends Command {
     protected void execute() 
     {
     	// Set the traction mode
-//    	if(Robot.oi.button_dR.get())
-//    		Robot.drive.setDriveType(driveType.FULL_TRACTION);
-//    	
-//    	else if(Robot.oi.button_dL.get())
-//    		Robot.drive.setDriveType(driveType.REAR_TRACTION);
-//    	
-//    	else
-//    		Robot.drive.setDriveType(driveType.FULL_OMNI);
+    	if(Robot.oi.button_dR.get())
+    		Robot.drive.setDriveType(driveType.FULL_TRACTION);
+    	
+    	else if(Robot.oi.button_dL.get())
+    		Robot.drive.setDriveType(driveType.REAR_TRACTION);
+    	
+    	else
+    		Robot.drive.setDriveType(driveType.FULL_OMNI);
     	
     	
     	// set the Drive motor output

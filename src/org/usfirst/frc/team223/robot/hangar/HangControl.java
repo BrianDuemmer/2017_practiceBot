@@ -16,7 +16,7 @@ public class HangControl extends Command {
     
     protected void initialize() 
     {
-    	Robot.hangar.log.info("Starting Intake...");
+    	Robot.hangar.log.info("Starting Hangar...");
     }
 
     
@@ -33,7 +33,7 @@ public class HangControl extends Command {
     
     protected void end() 
     {
-    	Robot.hangar.log.info("Stopping Intake...");
+    	Robot.hangar.log.info("Stopping Hangar...");
     	Robot.hangar.setOutput(0);
     }
 

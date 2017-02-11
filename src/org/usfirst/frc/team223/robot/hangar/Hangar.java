@@ -6,6 +6,7 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.MotorData;
 
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
@@ -25,13 +26,13 @@ public class Hangar extends Subsystem
 	public Hangar(AdvancedXManager manager)
 	{
 		log = manager.getRoboLogger().getLogger("HANGAR");
-		log.info("Initializing Intake Subsystem...");
+		log.info("Initializing Hangar Subsystem...");
 		
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
 		this.manager = manager;
 		
-		this.motorData = parser.parseMotor("hangarMotor");
+		this.motorData = parser.parseMotor("Hangar/motor");
 		this.motor = allocator.allocateMotor(this.motorData);
 	}
 	
@@ -47,7 +48,12 @@ public class Hangar extends Subsystem
 
     public void initDefaultCommand() 
     {
-
+    }
+    
+    
+    public void setDefaultCommand(Command cmd)
+    {
+    	super.setDefaultCommand(cmd);
     }
     
     

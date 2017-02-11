@@ -1,6 +1,8 @@
-package org.usfirst.frc.team223.AdvancedX.motionControl;
+package org.usfirst.frc.team223.robot.driveTrain;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
+import org.usfirst.frc.team223.AdvancedX.motionControl.DriveSide;
+import org.usfirst.frc.team223.AdvancedX.motionControl.OmniDirectionalDrive;
 import org.usfirst.frc.team223.AdvancedX.robotParser.DriveSideData;
 import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
@@ -9,13 +11,14 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
 import org.usfirst.frc.team223.AdvancedX.robotParser.SolenoidData;
 
 import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
 /**
  * Class for controlling an H drive
- * @author develoer
+ * @author Brian Duemmer
  *
  */
 public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, Freeable 
@@ -30,6 +33,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	// the arc radius for mooning
 	private double kMoonScalar = 0;	
 	
+	
+		
 	
 	
 	//////////////// Modal Data /////////////////
@@ -74,6 +79,42 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	private Logger log;
 	private Command defaultCommand;
 	private AdvancedXManager manager;
+	private boolean shouldStop;
+	
+	// NT keys
+	private static final String leftVelKey = "leftDriveVel";
+	private static final String leftPosKey = "leftDrivePos";
+	
+	private static final String rightVelKey = "rightDriveVel";
+	private static final String rightPosKey = "rightDrivePos";
+	
+	private static final String centerVelKey = "centerDriveVel";
+	private static final String centerPosKey = "centerDrivePos";
+	
+	
+	private static final String frontTractionKey = "frontTraction";
+	private static final String rearTractionKey = "rearTraction";
+	
+	
+	// runs periodically in the background during the duration of the shooter
+	private Thread drivePeriodic = new Thread()
+	{
+		public void run()
+		{
+			// delay to save resources
+			Timer.delay(0.1);
+			
+			// put some stuff to NT
+			manager.getNt().putNumber(leftPosKey, leftDriveSide.getPos());
+			manager.getNt().putNumber(leftVelKey, leftDriveSide.getVel());
+			
+			manager.getNt().putNumber(rightPosKey, rightDriveSide.getPos());
+			manager.getNt().putNumber(rightVelKey, rightDriveSide.getVel());
+			
+			manager.getNt().putBoolean(rearTractionKey, rearSolenoid.get() ^ rearSolenoidData.invert);
+			manager.getNt().putBoolean(frontTractionKey, frontSolenoid.get() ^ frontSolenoidData.invert);
+		}
+	};
 	
 	
 	
@@ -83,6 +124,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		log = manager.getRoboLogger().getLogger("OmniHDrive");
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
+		
+		log.info("parser: " + parser + "  allocator: " +allocator);
 		
 		this.manager = manager;
 		
@@ -126,6 +169,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		this.kStrafeSlip = (Double)parser.getKeyByPath("Drive/kStrafeSlip", BASIC_TYPE.DOUBLE);
 		this.kMoonScalar = (Double)parser.getKeyByPath("Drive/kMoonScalar", BASIC_TYPE.DOUBLE);
 		
+		drivePeriodic.start();
+		
 		log.info("Finished allocating ButterflyHDrive data");
 		
 	}
@@ -136,6 +181,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	
 	public void free()
 	{
+		shouldStop = true;
 		log.info("Attempting to free ButterflyHDrive...");
 		
 		log.info("Attempting to free Center DriveSide...");
@@ -234,7 +280,6 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	@Override	
 	protected void initDefaultCommand() 
 	{
-		setDefaultCommand(this.defaultCommand);
 	}
 
 
@@ -260,7 +305,13 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		if(currDriveType == null)
 		{
 			log.warn("A null value has been passed to setCurrDriveType. Drive type will not be changed.");
+			return;
 		}
+		
+		
+		// log the change, if there is one
+		if(currDriveType != this.currDriveType)
+			log.info("Drive mode is now " + currDriveType);
 		
 		
 		
@@ -300,9 +351,6 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			return;
 		}
 		
-		
-		// log the change
-		log.info("Drive mode is now " + currDriveType);
 		
 		this.currDriveType = currDriveType;
 	}

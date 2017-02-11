@@ -6,6 +6,7 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.MotorData;
 
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
@@ -47,7 +48,12 @@ public class Intake extends Subsystem
 
     public void initDefaultCommand() 
     {
-    	
+    }
+    
+    
+    public void setDefaultCommand(Command cmd)
+    {
+    	super.setDefaultCommand(cmd);
     }
     
     

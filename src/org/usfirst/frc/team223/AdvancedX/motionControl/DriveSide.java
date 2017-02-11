@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
+import org.usfirst.frc.team223.AdvancedX.utility.Differentiator;
 
 import com.ctre.CANTalon;
 
@@ -43,6 +44,8 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	
 	AdvancedXManager manager;
 	
+	private Differentiator posToVel;
+	
 	
 	/**
 	 * Constructor for the DriveSide. Make sure to configure the motors, PID, 
@@ -62,6 +65,10 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		
 		// Set the maximum output to a safe default
 		maxOut = 1;
+		
+		// setup the differentiator
+		this.posToVel = new Differentiator(1, false);
+		this.posToVel.start();
 	}
 	
 	
@@ -82,6 +89,9 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		
 		// Set the maximum output to a safe default
 		maxOut = 1;
+		
+		this.posToVel = new Differentiator(1, false);
+		this.posToVel.start();
 	}
 	
 	
@@ -115,7 +125,7 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	public void setPIDSource(PIDSource src)
 	{   
 		pidSrc = src;   
-		pidSrc.setPIDSourceType(PIDSourceType.kRate);
+		pidSrc.setPIDSourceType(PIDSourceType.kDisplacement);
 	}
 	
 	
@@ -205,6 +215,10 @@ public class DriveSide extends PIDSubsystem implements Freeable
 			// set the setpoint
 			super.setSetpoint(setpoint);
 			
+			// if this is the first enable, reset the differentiator
+			if(!getPIDController().isEnabled())
+				posToVel.reset();
+			
 			// enable the PID
 			this.enable();
 		}
@@ -231,7 +245,7 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	protected void initDefaultCommand() {}
 	
 	@Override
-	protected double returnPIDInput() {   return getPID();   }
+	protected double returnPIDInput() {   return getVel();   }
 	
 	@Override
 	protected void usePIDOutput(double output) {
@@ -393,6 +407,21 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		else{
 			logger.warn("Unable to free PIDSource! Possibly due to it being freed already");
 		}
+		
+	}
+	
+	
+	public double getPos()
+	{
+		// get the current position
+		double currPos = pidSrc.pidGet();
+		return currPos;
+	}
+	
+	public double getVel()
+	{
+		double currVel = posToVel.feed(getPos());
+		return currVel;
 		
 	}
 }
