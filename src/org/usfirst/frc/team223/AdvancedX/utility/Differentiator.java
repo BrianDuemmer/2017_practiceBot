@@ -7,6 +7,7 @@ package org.usfirst.frc.team223.AdvancedX.utility;
  */
 public class Differentiator extends Thread
 {
+	@SuppressWarnings("unused")
 	private int level;
 	private long lastFeedTime;
 	private double lastFeedVal;

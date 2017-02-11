@@ -10,6 +10,8 @@ public class ShooterNoVision extends Command
 	// time, to hopefully free up the jam, before returning to normal
 	private static double lastJamTime = -1;
 	
+	private boolean upToSpeed;
+	
 	public ShooterNoVision()
 	{
 		requires(Robot.shooter);
@@ -19,6 +21,8 @@ public class ShooterNoVision extends Command
 	public void initialize()
 	{
 		Robot.shooter.log.info("Entering ShooterNoVisionCommand");
+		upToSpeed = false;
+		Robot.shooter.getShooterPID().reset();
 	}
 	
 	
@@ -59,7 +63,15 @@ public class ShooterNoVision extends Command
 	 */
 	private void runAuger()
 	{
-		Robot.shooter.augerMotor.set(1);
+		double target = Robot.shooter.shooterTargetRPM;
+		
+		if(Math.abs(Robot.shooter.getShooterRPM() - target) / target < 0.1 || upToSpeed)
+		{
+			Robot.shooter.augerMotor.set(1);
+			upToSpeed = true;
+		}
+		else
+			Robot.shooter.augerMotor.set(0);
 	}
 
 }

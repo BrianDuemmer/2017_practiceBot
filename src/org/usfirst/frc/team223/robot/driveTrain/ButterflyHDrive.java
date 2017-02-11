@@ -2,6 +2,7 @@ package org.usfirst.frc.team223.robot.driveTrain;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.motionControl.DriveSide;
+import org.usfirst.frc.team223.AdvancedX.motionControl.LinearFeedInterpolator;
 import org.usfirst.frc.team223.AdvancedX.motionControl.OmniDirectionalDrive;
 import org.usfirst.frc.team223.AdvancedX.robotParser.DriveSideData;
 import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
@@ -24,7 +25,7 @@ import net.sf.microlog.core.Logger;
 public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, Freeable 
 {
 	/////////// Constants and scalars ////////////
-	
+
 	// slip constants - multiply these by the power outputs to estimate our slippage
 	private double kFwdSlip = 0;
 	private double kStrafeSlip = 0;
@@ -32,13 +33,13 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	// Moon interpolation scalar. The moon trigger is divided by this to calculate
 	// the arc radius for mooning
 	private double kMoonScalar = 0;	
-	
-	
-		
-	
-	
+
+
+
+
+
 	//////////////// Modal Data /////////////////
-	
+
 	/**
 	 *  Enum that describes the driving mode that the robot is in
 	 * @author Brian Duemmer
@@ -51,70 +52,92 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		REAR_TRACTION,
 		FULL_OMNI
 	}
-	
+
 	private driveType currDriveType = driveType.FULL_OMNI;
-	
-	
+
+
 	////////////// Physical Objects //////////////
-		
+
 	// DriveSides
 	private DriveSideData leftSideData;
 	private DriveSide leftDriveSide;
-	
+
 	private DriveSideData rightSideData;
 	private DriveSide rightDriveSide;
-	
+
 	private DriveSideData centerSideData;
 	private DriveSide centerDriveSide;
-	
+
 	// Solenoids
 	private SolenoidData frontSolenoidData;
 	private Solenoid frontSolenoid;
-	
+
 	private SolenoidData rearSolenoidData;
 	private Solenoid rearSolenoid;
-	
-	
+
+
 	////////////////// Utility //////////////////
 	private Logger log;
 	private Command defaultCommand;
 	private AdvancedXManager manager;
 	private boolean shouldStop;
-	
+	private LinearFeedInterpolator distInterpolator;
+
 	// NT keys
 	private static final String leftVelKey = "leftDriveVel";
 	private static final String leftPosKey = "leftDrivePos";
-	
+
 	private static final String rightVelKey = "rightDriveVel";
 	private static final String rightPosKey = "rightDrivePos";
-	
+
 	private static final String centerVelKey = "centerDriveVel";
 	private static final String centerPosKey = "centerDrivePos";
-	
-	
+
+
 	private static final String frontTractionKey = "frontTraction";
 	private static final String rearTractionKey = "rearTraction";
-	
-	
+
+
 	// runs periodically in the background during the duration of the shooter
 	private Thread drivePeriodic = new Thread()
 	{
 		public void run()
 		{
-			// delay to save resources
-			Timer.delay(0.1);
-			
-			// put some stuff to NT
-			manager.getNt().putNumber(leftPosKey, leftDriveSide.getPos());
-			manager.getNt().putNumber(leftVelKey, leftDriveSide.getVel());
-			
-			manager.getNt().putNumber(rightPosKey, rightDriveSide.getPos());
-			manager.getNt().putNumber(rightVelKey, rightDriveSide.getVel());
-			
-			manager.getNt().putBoolean(rearTractionKey, rearSolenoid.get() ^ rearSolenoidData.invert);
-			manager.getNt().putBoolean(frontTractionKey, frontSolenoid.get() ^ frontSolenoidData.invert);
+			while(!shouldStop)
+			{
+				// delay to save resources
+				Timer.delay(0.1);
+
+				// put some stuff to NT
+				manager.getNt().putNumber(leftPosKey, leftDriveSide.getPos());
+				manager.getNt().putNumber(leftVelKey, leftDriveSide.getVel());
+
+				manager.getNt().putNumber(rightPosKey, rightDriveSide.getPos());
+				manager.getNt().putNumber(rightVelKey, rightDriveSide.getVel());
+
+				manager.getNt().putBoolean(rearTractionKey, rearSolenoid.get() ^ rearSolenoidData.invert);
+				manager.getNt().putBoolean(frontTractionKey, frontSolenoid.get() ^ frontSolenoidData.invert);
+			}
 		}
 	};
+	
+	
+	
+	
+	// PID Controller utilities
+	private double fwdDistAction;
+	private double fwdRateAction;
+	private double angularRateAction;
+	private double centerDistAction;
+	
+
+
+
+	
+	
+	
+	
+	
 	
 	
 	
@@ -124,89 +147,89 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		log = manager.getRoboLogger().getLogger("OmniHDrive");
 		GXMLparser parser = manager.obtainParser();
 		GXMLAllocator allocator = manager.obtainAllocator();
-		
+
 		log.info("parser: " + parser + "  allocator: " +allocator);
-		
+
 		this.manager = manager;
-		
+
 		// log us entering the parse routine
 		log.info("\r\n\r\n\r\n================= Initializing Butterfly H Drive =================");
-		
-		
+
+
 		// parse the objects
 		this.leftSideData = parser.parseDriveSide("Drive/leftSide");
 		this.rightSideData = parser.parseDriveSide("Drive/rightSide");
 		this.centerSideData = parser.parseDriveSide("Drive/centerSide");
-		
+
 		this.frontSolenoidData = parser.parseSolenoid("Drive/frontSolenoid");
 		this.rearSolenoidData = parser.parseSolenoid("Drive/rearSolenoid");
-		
-		
-		
+
+
+
 		log.info("Attempting to allocate objects...");
-		
+
 		// Allocate the objects
 		log.info("Allocating left side...");
 		this.leftDriveSide = allocator.allocateDriveSide(this.leftSideData, "leftSide");
 		log.info("Finished allocating left side");
-		
+
 		log.info("Allocating right side...");
 		this.rightDriveSide = allocator.allocateDriveSide(this.rightSideData, "rightSide");
 		log.info("Finished allocating right side");
-		
+
 		log.info("Allocating center side...");
 		this.centerDriveSide = allocator.allocateDriveSide(this.centerSideData, "centerSide");
 		log.info("Finished allocating center side");
-		
+
 		this.frontSolenoid = allocator.allocateSolenoid(this.frontSolenoidData);
 		this.rearSolenoid = allocator.allocateSolenoid(this.rearSolenoidData);
 		log.info("Finished allocating solenoids");
-		
+
 		log.info("Attempting to parse variables...");
-		
+
 		// Parse the variables
 		this.kFwdSlip = (Double)parser.getKeyByPath("Drive/kFwdSlip", BASIC_TYPE.DOUBLE);
 		this.kStrafeSlip = (Double)parser.getKeyByPath("Drive/kStrafeSlip", BASIC_TYPE.DOUBLE);
 		this.kMoonScalar = (Double)parser.getKeyByPath("Drive/kMoonScalar", BASIC_TYPE.DOUBLE);
-		
+
 		drivePeriodic.start();
-		
+
 		log.info("Finished allocating ButterflyHDrive data");
-		
+
 	}
-	
-	
-	
-	
-	
+
+
+
+
+
 	public void free()
 	{
 		shouldStop = true;
 		log.info("Attempting to free ButterflyHDrive...");
-		
+
 		log.info("Attempting to free Center DriveSide...");
 		this.manager.destroy(centerDriveSide);
 		log.info("Finished freeing center DriveSide");
-		
+
 		log.info("Attempting to free Left DriveSide...");
 		this.manager.destroy(leftDriveSide);
 		log.info("Finished freeing Left DriveSide");
-		
-		
+
+
 		log.info("Attempting to free Right DriveSide...");
 		this.manager.destroy(rightDriveSide);
 		log.info("Finished freeing Right DriveSide");
-		
+
 		log.info("Attempting to free Solenoids...");
 		this.manager.destroy(frontSolenoid);
 		this.manager.destroy(rearSolenoid);
 		log.info("Finished freeing Solenoids");
-		
+
 		log.info("Finished freeing ButterflyHDrive");
 	}
-	
-	
-	
+
+
+
 	/**
 	 * Sets the default command for the {@link ButterflyHDrive}. Do not call this 
 	 * until after the subsystem has been initialized
@@ -216,12 +239,12 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		this.defaultCommand = cmd;
 		super.setDefaultCommand(cmd);
 	}
-	
-	
-	
-	
-	
-	
+
+
+
+
+
+
 	/**
 	 * {@inheritDoc}
 	 * <P/>
@@ -232,14 +255,27 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	{
 		this.leftDriveSide.setRawOutput(fwd + turn);
 		this.rightDriveSide.setRawOutput(fwd - turn);
-		
+
 		if(this.currDriveType == driveType.FULL_OMNI)
 			this.centerDriveSide.setRawOutput(strafe);
-		
+
 		else
 			this.centerDriveSide.setRawOutput(0);
 
 	}
+
+	
+	
+	
+	
+///////////////////////////////////////////////////////////////////////////////////////////////////////	
+/////////////////////////////////////////// Getters / Setters /////////////////////////////////////////	
+///////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	
+	
+	
 
 	@Override
 	public double getAngle() {
@@ -276,7 +312,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		// TODO Auto-generated method stub
 		return 0;
 	}
-	
+
 	@Override	
 	protected void initDefaultCommand() 
 	{
@@ -307,51 +343,51 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			log.warn("A null value has been passed to setCurrDriveType. Drive type will not be changed.");
 			return;
 		}
-		
-		
+
+
 		// log the change, if there is one
 		if(currDriveType != this.currDriveType)
 			log.info("Drive mode is now " + currDriveType);
-		
-		
-		
+
+
+
 		// set the proper solenoids
-		
+
 		// if front traction, set the rear wheels only as omni
 		if(currDriveType.equals(driveType.FRONT_TRACTION))
 		{
 			this.frontSolenoid.set(false ^ this.frontSolenoidData.invert);
 			this.rearSolenoid.set(true ^ this.rearSolenoidData.invert);
 		}
-		
+
 		// if rear traction, set the front wheels only as omni
 		else if(currDriveType.equals(driveType.REAR_TRACTION))
 		{
 			this.frontSolenoid.set(true ^ this.frontSolenoidData.invert);
 			this.rearSolenoid.set(false ^ this.rearSolenoidData.invert);
 		}
-		
+
 		// if full traction, set all wheels as traction
 		else if(currDriveType.equals(driveType.FULL_TRACTION))
 		{
 			this.frontSolenoid.set(false ^ this.frontSolenoidData.invert);
 			this.rearSolenoid.set(false ^ this.rearSolenoidData.invert);
 		}
-		
+
 		// if full omni, set all wheels as omni
 		else if(currDriveType.equals(driveType.FULL_OMNI))
 		{
 			this.frontSolenoid.set(true ^ this.frontSolenoidData.invert);
 			this.rearSolenoid.set(true ^ this.rearSolenoidData.invert);
 		}
-		
+
 		else
 		{
 			log.warn("Invalid parameter \"" + currDriveType + "\" has been passed to setCurrDriveType. Driving mode will not be updated.");
 			return;
 		}
-		
-		
+
+
 		this.currDriveType = currDriveType;
 	}
 
