@@ -1,6 +1,5 @@
 package org.usfirst.frc.team223.AdvancedX.motionControl;
 
-import edu.wpi.first.wpilibj.Timer;
 import net.sf.microlog.core.Logger;
 
 /**
@@ -98,7 +97,7 @@ public class LinearFeedInterpolator
 	public double start(double currVel, double finalVel, double dist)
 	{
 		// update the instance variables
-		this.t0 = Timer.getFPGATimestamp();
+		this.t0 = (double)System.currentTimeMillis() / 1000.0;
 		
 		log.info("Starting LinearFeedInterpolation sequence...");
 
@@ -137,17 +136,17 @@ public class LinearFeedInterpolator
 
 		// say that we are now active
 		this.isActive = true;
+		
+		// calculate the base move type
+		double sa = ((2 * kVmax*kVmax) - (v0*v0 + vf*vf)) / (2*kAmax);
+		moveType = sTotal >= sa  ?  3 : 2;
 
 		// check for an illegal move
-		if(sTotal < (v0*v0 - vf*vf) / (2*kAmax) )
+		if(sTotal < Math.abs(v0*v0 - vf*vf) / (2*kAmax) )
 		{
 			log.warn("Attempted movement would exceed preset limit for acceleration! Proceeding anyway...");
 			moveType = 1;
 		}
-
-		// calculate the move type
-		double sa = ((2 * kVmax*kVmax) - (v0*v0 + vf*vf)) / (2*kAmax);
-		moveType = sTotal >= sa  ?  3 : 2;
 
 		// initialize the movement based on the proper move type
 		if(moveType == 3)
@@ -205,10 +204,11 @@ public class LinearFeedInterpolator
 		s2 = sTotal - s1;
 
 		t1 = (max-min) / (kAmax);
-		t2 = (2 * Math.sqrt(max*s2 + max*max) - max) / kAmax;
+		t2 = (2/kAmax) * (Math.sqrt(kAmax*s2 + max*max) - max);
 
 		tTotal = t1 + t2;
 
+		log.info("s2: " +s2+ "  s1: " +s1+ "  t1: " +t1+ "  t2: " +t2);
 	}
 
 
@@ -287,7 +287,7 @@ public class LinearFeedInterpolator
 	private double calcSType3()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 
 		double pos = 0;
 
@@ -332,27 +332,22 @@ public class LinearFeedInterpolator
 	private double calcSType2()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 		double pos = 0;
-
-		
-		// area of the part 2 curve before part 2 starts
-		double prevAreaS2;
-		
-		if(v0>vf)
-			prevAreaS2 = (t2/2) * (kVmax + 0.5*kAmax*(t1+t2));
-		else
-			prevAreaS2 = (t1 + t2/2) * (kVmax + 0.5*kAmax*(t1+t2));
 
 		
 		
 		// use the proper time bounds for section 1 depending on whether v0 of vf is larger
-		if((v0>vf && t < t2/2) || (v0<vf && t < t1 + t2/2))
+		if((v0>=vf && t < t2/2) || (v0<vf && t < t1 + t2/2))
 			pos = v0*t + 0.5*kAmax*t*t;
 
-		// if section 2
-		else if(t < tTotal)
-			pos = s1 - prevAreaS2 + t*(vf - 0.5*kAmax*t + kAmax * (t1+t2));
+		// if section 2, v0 is less than vf
+		else if(t < tTotal && v0<vf)
+			pos = vf*t - 0.5*kAmax * (t - t1 - 0.5*t2) * Math.abs(t - t1 - 0.5*t2) + 0.5*kAmax*t2*t - 0.5*kAmax*(t1 + 0.5*t2) * Math.abs(t1 + 0.5*t2);
+		
+		// if section 2, v0 is greater than vf
+		else if(t < tTotal && v0>=vf)
+			pos = v0*t - 0.5*kAmax * (t - 0.5*t2) * Math.abs(t - 0.5*t2) + 0.5*kAmax * t2*t - 0.125*kAmax * t2*t2;
 
 		// if past the interpolation sequence
 		else
@@ -380,7 +375,7 @@ public class LinearFeedInterpolator
 	private double calcSType1()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 		double pos = 0;
 
 		if(t < tTotal)
@@ -408,7 +403,7 @@ public class LinearFeedInterpolator
 	private double calcVType3()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 
 		//velocity to be returned
 		double vel;
@@ -448,7 +443,7 @@ public class LinearFeedInterpolator
 	private double calcVType2()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 
 		//velocity to be returned
 		double vel;
@@ -504,7 +499,7 @@ public class LinearFeedInterpolator
 	private double calcVType1()
 	{
 		// current time, relative to cycle start
-		double t = Timer.getFPGATimestamp() - t0;
+		double t = ((double)System.currentTimeMillis() / 1000.0) - t0;
 
 		//velocity to be returned
 		double vel;
@@ -544,7 +539,7 @@ public class LinearFeedInterpolator
 	 * Call this periodically to find out when the target has been reached
 	 */
 	public boolean isActive() {
-		isActive = Timer.getFPGATimestamp() >= t0 + tTotal;
+		isActive = ((double)System.currentTimeMillis() / 1000.0) <= t0 + tTotal;
 		return isActive;
 	}
 
