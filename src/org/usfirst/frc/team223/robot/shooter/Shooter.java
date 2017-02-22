@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SpeedController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.command.Command;
 import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
@@ -27,30 +28,65 @@ public class Shooter extends Subsystem
 {
 	// NT Keys
 	public static final String shooterSpeedkey = "shooterRPM";
+	public static final String shooterPosKey = "shooterPos";
 	public static final String shooterSetpointKey = "shooterSetpoint";
 	public static final String shooterEnabledKey = "shooterOn";
 	public static final String shooterOutputKey = "shooterOutput";
 
 
 	private EncoderData shooterEncoderData;
-	private MotorData shooterMotorData;
+	MotorData shooterMotorData;
 	CANTalon shooterMotor;
 
-	private MotorData augerMotorData;
+	MotorData augerMotorData;
 	SpeedController augerMotor;
 
 
+	
 
 	// PID utilities
 	private PIDController shooterPID;
 	private PIDData shooterPIDData;
-
-	// PID Source for the shooter PID
-	private PIDSource shooterSrc;
-
+	
 	// PIDOutput for the shooter
-	private PIDOutput shooterOutput;
+	private PIDOutput shooterOutput = new PIDOutput()
+	{
+		@Override
+		public void pidWrite(double output) {
+			shooterMotor.set(output);
+		}
+	};
+	
+	
+	
+	// PID Source for the shooter PID
+	private PIDSource shooterSrc = new PIDSource()
+	{
+		/**
+		 * don't do anything, we will always want rate
+		 */
+		@Override
+		public void setPIDSourceType(PIDSourceType pidSource) {}
 
+		/**
+		 * Always returns rate for the encoder type
+		 */
+		@Override
+		public PIDSourceType getPIDSourceType() {
+			return PIDSourceType.kRate;
+		}
+
+		@Override
+		public double pidGet() {
+			return getShooterRPM();
+		}
+
+	};
+
+	
+	
+	
+	
 	// target output speed for the shooter
 	public double shooterTargetRPM;
 
@@ -71,9 +107,11 @@ public class Shooter extends Subsystem
 
 					// report some stuff via NT
 					manager.getNt().putNumber(shooterSpeedkey, getShooterRPM());
+					manager.getNt().putNumber(shooterPosKey, getShooterPos());
 					manager.getNt().putNumber(shooterSetpointKey, getShooterPID().getSetpoint());
 					manager.getNt().putBoolean(shooterEnabledKey, getShooterPID().isEnabled());
-					manager.getNt().putNumber(shooterOutputKey, getShooterPID().get());
+					manager.getNt().putNumber(shooterOutputKey, Math.abs(shooterMotor.get()));
+					manager.getNt().putNumber("ShootKi", shooterPID.getI());
 
 				}
 			} catch(Exception e)
@@ -124,45 +162,6 @@ public class Shooter extends Subsystem
 
 		this.shooterPIDData = parser.parsePID("Shooter/wheels/PID");
 
-
-
-
-		// Setup the shooter PID
-		shooterSrc = new PIDSource()
-		{
-			/**
-			 * don't do anything, we will always want rate
-			 */
-			@Override
-			public void setPIDSourceType(PIDSourceType pidSource) {}
-
-			/**
-			 * Always returns rate for the encoder type
-			 */
-			@Override
-			public PIDSourceType getPIDSourceType() {
-				return PIDSourceType.kRate;
-			}
-
-			@Override
-			public double pidGet() {
-				return getShooterRPM();
-			}
-
-		};
-
-
-		// setup the shooter PID output
-		this.shooterOutput = new PIDOutput()
-		{
-			@Override
-			public void pidWrite(double output) {
-				shooterMotor.set(output);
-			}
-		};
-
-
-
 		this.shooterPID = allocator.allocatePID(shooterPIDData, shooterSrc, shooterOutput);
 
 		// start the periodic function
@@ -194,6 +193,10 @@ public class Shooter extends Subsystem
 	 * Leave this empty - we don't have anything running by default
 	 */
 	public void initDefaultCommand() {}
+	
+	
+	
+	public void setDefaultCommand(Command command) {   super.setDefaultCommand(command); }
 
 
 	/**
@@ -210,6 +213,14 @@ public class Shooter extends Subsystem
 	{
 		double speed = shooterMotor.getEncVelocity() * shooterEncoderData.distPerCount;
 		return speed;
+	}
+	
+	
+	
+	
+	public double getShooterPos()
+	{
+		return shooterMotor.getEncPosition() * shooterEncoderData.distPerCount;
 	}
 
 

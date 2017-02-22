@@ -1,6 +1,7 @@
 package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.utility.SmartControlStick;
+import org.usfirst.frc.team223.robot.driveTrain.G1XYMovement;
 import org.usfirst.frc.team223.robot.hangar.HangControl;
 import org.usfirst.frc.team223.robot.shooter.ShooterNoVision;
 
@@ -83,12 +84,14 @@ public OI() {
 		stick_oR.setParams(false, true, 0.1, 1);
 		
 		/////////////////////////// Driver Buttons ////////////////////////////
-		
+		button_dA.whenActive(new G1XYMovement(0, 5, true));
+		button_dB.whenActive(new G1XYMovement(0, 10, true));
 
 		
 		////////////////////////// Operator Buttons ///////////////////////////
 		button_oR.whileActive(new ShooterNoVision());
 		button_oL.whileActive(new HangControl());
+		
 
 
 	}

@@ -82,6 +82,17 @@ public class LinearFeedInterpolator
 
 		log.info("Created new LinearFeedInterpolator with max acceleration of " +aMax+ "   and max velocity of " +vMax);
 	}
+	
+	
+	
+	
+	public void setConstraints(double aMax, double vMax)
+	{
+		this.kAmax = aMax;
+		this.kVmax = vMax;
+		
+		log.info("LFI constraints are now:  aMax-" +aMax+ " vMax-" +vMax);
+	}
 
 
 
@@ -522,7 +533,6 @@ public class LinearFeedInterpolator
 
 
 
-
 	/**
 	 * Cancels the current interpolation sequence. Once this is called, {@link LinearFeedInterpolator#isActive() isActive()}
 	 * will return false until {@link LinearFeedInterpolator#start() start()} is called again.
@@ -542,7 +552,6 @@ public class LinearFeedInterpolator
 		isActive = ((double)System.currentTimeMillis() / 1000.0) <= t0 + tTotal;
 		return isActive;
 	}
-
 }
 
 

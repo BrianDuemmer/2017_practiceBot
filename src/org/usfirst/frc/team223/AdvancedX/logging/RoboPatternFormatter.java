@@ -2,7 +2,6 @@ package org.usfirst.frc.team223.AdvancedX.logging;
 
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
 
-import edu.wpi.first.wpilibj.Timer;
 import net.sf.microlog.core.Level;
 import net.sf.microlog.core.format.PatternFormatter;
 
@@ -48,7 +47,6 @@ public class RoboPatternFormatter extends PatternFormatter
 	private String parseCustomArgs(String str)
 	{
 		// add a new line for each character sequence
-		str = str.replaceAll("%" + MATCH_TIME_CHAR, new Double(Timer.getMatchTime()).toString());
 		
 		return str;
 	}

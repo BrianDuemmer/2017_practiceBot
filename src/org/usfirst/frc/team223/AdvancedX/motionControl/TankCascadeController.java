@@ -132,7 +132,7 @@ public class TankCascadeController implements Freeable
 			double currTime = Timer.getFPGATimestamp();
 			
 			// Average the two velocities
-			double avgVel = (getLeftSide().getPID() + rightSide.getPID()) / 2;
+			double avgVel = (getLeftSide().getVel() + rightSide.getVel()) / 2;
 			
 			
 			// if prevTime is >= 0, it is valid, and we can proceed normally

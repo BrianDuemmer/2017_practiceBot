@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
+import org.usfirst.frc.team223.AdvancedX.robotParser.DriveSideData;
 import org.usfirst.frc.team223.AdvancedX.robotParser.Freeable;
 import org.usfirst.frc.team223.AdvancedX.utility.Differentiator;
 
@@ -12,8 +13,10 @@ import com.ctre.CANTalon;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.PWM;
+import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SensorBase;
 import edu.wpi.first.wpilibj.SpeedController;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
 import net.sf.microlog.core.Logger;
 
@@ -26,8 +29,9 @@ import net.sf.microlog.core.Logger;
  */
 public class DriveSide extends PIDSubsystem implements Freeable
 {
-	// Encoder object
-	PIDSource pidSrc;
+	// Encoder objects
+	PIDSource velocityPidSrc;
+	PIDSource positionPidSrc;
 	
 	// All of the motors
 	private List<SpeedController> motors;
@@ -122,17 +126,18 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	 * Sets the PID source for the driveSide. this is usually an encoder / CANTalon.
 	 * @param src the PIDsource to use
 	 */
-	public void setPIDSource(PIDSource src)
+	public void setVelocityPIDSource(PIDSource src)
 	{   
-		pidSrc = src;   
-		pidSrc.setPIDSourceType(PIDSourceType.kDisplacement);
+		velocityPidSrc = src;   
+		velocityPidSrc.setPIDSourceType(PIDSourceType.kDisplacement);
 	}
 	
 	
-	/**
+	/** 
 	 * Sets the scalings for the PIDSource
 	 * @param distPerPulse the value that is multiplied by the value returned by the PIDSource
 	 * @param invert if true, multiplies the output of PIDSource by -1
+	 * @deprecated Create a custom PIDSource object and do your scalings in that instead
 	 */
 	public void setPIDSrcScalings(double distPerPulse, boolean invert)
 	{
@@ -150,38 +155,6 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		motors.add(mot);  
 		logger.info("Motor added to DriveSide. There are now " + motors.size());
 		
-	}
-	
-	
-	
-	
-	/**
-	 * returns the input from the PID source provided by {@link setPIDSource}
-	 */
-	public double getPID() 
-	{
-		double pidVal;
-		
-		// if the PID Source is null, return 0
-		if(pidSrc == null)
-			return 0;
-		
-		
-		// if the PID Source is not null and is a CANTalon, use a workaround to deal with the
-		// fact that pidGet will NOT return speed, even if rate is the PIDSource mode.
-		if(pidSrc.getClass() == CANTalon.class)
-			pidVal = ((CANTalon)pidSrc).getSpeed();
-			
-		
-		// if the PID Source is not null and not a CANTalon, just use pidGet
-		else
-			pidVal = pidSrc.pidGet();
-		
-		// Scale and invert as necessary
-		pidVal *= distPerPulse;
-		pidVal *= invert  ?  -1 : 1;
-		return pidVal;
-
 	}
 
 	
@@ -209,15 +182,11 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	 */
 	public void setSetpoint(double setpoint)
 	{
-		// Don't run if a PID Source hasn't been set
-		if(pidSrc != null)
+		// Don't run if a velocityPID Source hasn't been set
+		if(velocityPidSrc != null)
 		{
 			// set the setpoint
 			super.setSetpoint(setpoint);
-			
-			// if this is the first enable, reset the differentiator
-			if(!getPIDController().isEnabled())
-				posToVel.reset();
 			
 			// enable the PID
 			this.enable();
@@ -324,7 +293,7 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		logger.info("Attempting to free DriveSide...");
 		
 		logger.info("Attempting to free PIDSource...");
-		this.manager.destroy(this.pidSrc);
+		this.manager.destroy(this.velocityPidSrc);
 		logger.info("Finished freeing PIDSource");
 		
 		logger.info("Attempting to free PIDController...");
@@ -370,8 +339,8 @@ public class DriveSide extends PIDSubsystem implements Freeable
 			
 			// If it equals the PIDSource, set that to null as well. This has to be done due to 
 			// poor design of the CANTalon Class
-			if(motors.get(i).equals(this.pidSrc))
-				this.pidSrc = null;
+			if(motors.get(i).equals(this.velocityPidSrc))
+				this.velocityPidSrc = null;
 			
 			// Whatever it is, set it to null manually. This is because calling delete() a second 
 			// time on a CANTalon causes a JVM crash (SIGSEGV error)
@@ -391,15 +360,15 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		
 		// free() the PIDSource. Try to cast it to a free()-able type. If we cannot, just ignore it
 		logger.info("Attempting to free PID Source...");
-		if(this.pidSrc != null && this.pidSrc.getClass() == CANTalon.class)
+		if(this.velocityPidSrc != null && this.velocityPidSrc.getClass() == CANTalon.class)
 		{
-			((CANTalon) this.pidSrc).delete();
+			((CANTalon) this.velocityPidSrc).delete();
 			logger.info("Finished freeing CANTalon PIDSource");
 		}
 		
-		else if(this.pidSrc != null && this.pidSrc.getClass().isAssignableFrom(SensorBase.class))
+		else if(this.velocityPidSrc != null && this.velocityPidSrc.getClass().isAssignableFrom(SensorBase.class))
 		{
-			((SensorBase) this.pidSrc).free();
+			((SensorBase) this.velocityPidSrc).free();
 			logger.info("Finished freeing SensorBase PIDSource");
 		}
 		
@@ -411,18 +380,55 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	}
 	
 	
-	public double getPos()
-	{
-		// get the current position
-		double currPos = pidSrc.pidGet();
-		return currPos;
-	}
+//	private double prevPos = 0;
+//	private double prevUpdateTime = Timer.getFPGATimestamp();
+//	
+//	public double getPos()
+//	{
+//		// get the current position
+//		double currPos = velocityPidSrc.pidGet() * distPerPulse * (invert  ?  -1 : 1);
+//		return currPos;
+//	}
+//	
+//	
+//	
+//	public double getVel()
+//	{
+//		double currPos = getPos();
+//		double currVel = (currPos - prevPos) / (Timer.getFPGATimestamp() - prevUpdateTime);
+//		
+//		prevPos = currPos;
+//		prevUpdateTime = Timer.getFPGATimestamp();
+//		
+//		return currVel;
+//		
+//	}
+	
 	
 	public double getVel()
 	{
-		double currVel = posToVel.feed(getPos());
-		return currVel;
+		return velocityPidSrc.pidGet();
+	}
+	
+	
+	public double getPos()
+	{
+		return positionPidSrc.pidGet();
+	}
+	
+	
+	/**
+	 * Gets the current draws of each motor on the driveside
+	 * @param pdp the power distribution panel
+	 */
+	public double[] getCurrent(PowerDistributionPanel pdp, DriveSideData data)
+	{
+		double[] ret = new double[data.motors.size()];
 		
+		for(int i=0; i<ret.length; i++)
+			ret[i] = pdp.getCurrent(data.motors.get(i).pdpChannel);
+		
+		return ret;
 	}
 }
 

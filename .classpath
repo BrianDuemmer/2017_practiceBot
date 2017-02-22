@@ -13,9 +13,12 @@
 	</classpathentry>
 	<classpathentry kind="lib" path="C:/Users/develoer/wpilib/user/java/lib/microlog-logger-core-2.3.5.jar"/>
 	<classpathentry kind="lib" path="C:/Users/develoer/wpilib/user/java/lib/navx_frc.jar" sourcepath="C:/Users/develoer/wpilib/user/java/lib/KauiLabs/src"/>
-	<classpathentry kind="var" path="USERLIBS_DIR/CTRLib.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/CTRLib.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/develoer/wpilib/user/java/lib/CTRE/docs/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="var" path="USERLIBS_DIR/microlog-logger-core-2.3.5.jar"/>
 	<classpathentry kind="var" path="USERLIBS_DIR/navx_frc.jar"/>
-	<classpathentry kind="var" path="USERLIBS_DIR/CTRLib-javadoc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

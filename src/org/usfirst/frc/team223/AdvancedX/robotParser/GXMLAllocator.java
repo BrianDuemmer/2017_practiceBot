@@ -386,7 +386,7 @@ public class GXMLAllocator {
 			}
 
 			// Set the PIDSource
-			ret.setPIDSource(src);
+			ret.setVelocityPIDSource(src);
 			ret.setPIDSrcScalings(data.encoder.distPerCount, data.encoder.invert);
 
 

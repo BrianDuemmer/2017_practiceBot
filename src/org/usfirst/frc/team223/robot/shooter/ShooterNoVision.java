@@ -67,7 +67,7 @@ public class ShooterNoVision extends Command
 		
 		if(Math.abs(Robot.shooter.getShooterRPM() - target) / target < 0.1 || upToSpeed)
 		{
-			Robot.shooter.augerMotor.set(1);
+			Robot.shooter.augerMotor.set(Robot.shooter.augerMotorData.maxOut);
 			upToSpeed = true;
 		}
 		else
