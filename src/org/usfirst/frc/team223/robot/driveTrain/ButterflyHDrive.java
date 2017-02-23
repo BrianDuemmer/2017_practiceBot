@@ -126,36 +126,43 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		{
 			while(!shouldStop)
 			{
-				// delay to save resources
-				Timer.delay(0.1);
+				try
+				{
+					// delay to save resources
+					Timer.delay(0.1);
 
-				// put some stuff to NT
-				manager.getNt().putNumber(leftPosKey, leftDriveSide.getPos());
-				manager.getNt().putNumber(leftVelKey, leftDriveSide.getVel());
+					// put some stuff to NT
+					manager.getNt().putNumber(leftPosKey, getLeftSidePos());
+					manager.getNt().putNumber(leftVelKey, leftDriveSide.getVel());
 
-				manager.getNt().putNumber(rightPosKey, rightDriveSide.getPos());
-				manager.getNt().putNumber(rightVelKey, rightDriveSide.getVel());
-				
-				manager.getNt().putNumber(centerPosKey, centerDriveSide.getPos());
-				manager.getNt().putNumber(centerVelKey, centerDriveSide.getVel());
+					manager.getNt().putNumber(rightPosKey, getRightSidePos());
+					manager.getNt().putNumber(rightVelKey, rightDriveSide.getVel());
 
-				manager.getNt().putBoolean(rearTractionKey, rearSolenoid.get() ^ rearSolenoidData.invert);
-				manager.getNt().putBoolean(frontTractionKey, frontSolenoid.get() ^ frontSolenoidData.invert);
-				
-				manager.getNt().putNumber(yawAngleKey, navx.getAngle());
-				
-				manager.getNt().putNumber("leftOut", leftDriveSide.getMotors().get(0).get());
-				manager.getNt().putNumber("rightOut", rightDriveSide.getMotors().get(0).get());
-				
-				manager.getNt().putNumber("leftVelSet", leftDriveSide.getSetpoint());
-				manager.getNt().putNumber("rightVelSet", rightDriveSide.getSetpoint());
-				manager.getNt().putNumber("centerVelSet", centerDriveSide.getSetpoint());
-				
+					manager.getNt().putNumber(centerPosKey, getCenterSidePos());
+					manager.getNt().putNumber(centerVelKey, centerDriveSide.getVel());
 
-				// update the current draw data
-				manager.getNt().putNumberArray(leftSideCurrentKey, leftDriveSide.getCurrent(Robot.pdp, leftSideData));
-				manager.getNt().putNumberArray(rightSideCurrentKey, rightDriveSide.getCurrent(Robot.pdp, rightSideData));
-				manager.getNt().putNumberArray(centerSideCurrentKey, centerDriveSide.getCurrent(Robot.pdp, centerSideData));
+					manager.getNt().putBoolean(rearTractionKey, rearSolenoid.get() ^ rearSolenoidData.invert);
+					manager.getNt().putBoolean(frontTractionKey, frontSolenoid.get() ^ frontSolenoidData.invert);
+
+					manager.getNt().putNumber(yawAngleKey, navx.getAngle());
+
+					manager.getNt().putNumber("leftOut", leftDriveSide.getMotors().get(0).get());
+					manager.getNt().putNumber("rightOut", rightDriveSide.getMotors().get(0).get());
+
+					manager.getNt().putNumber("leftVelSet", leftDriveSide.getSetpoint());
+					manager.getNt().putNumber("rightVelSet", rightDriveSide.getSetpoint());
+					manager.getNt().putNumber("centerVelSet", centerDriveSide.getSetpoint());
+
+
+					// update the current draw data
+					manager.getNt().putNumberArray(leftSideCurrentKey, leftDriveSide.getCurrent(Robot.pdp, leftSideData));
+					manager.getNt().putNumberArray(rightSideCurrentKey, rightDriveSide.getCurrent(Robot.pdp, rightSideData));
+					manager.getNt().putNumberArray(centerSideCurrentKey, centerDriveSide.getCurrent(Robot.pdp, centerSideData));
+				} catch(Exception e) // log the error and wait for a bit
+				{
+					log.error("Exception in Drive Periodic: ,e");
+					Timer.delay(1);
+				}
 			}
 		}
 	};
@@ -202,8 +209,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 				@Override
 				public double pidGet() 
 				{
-					double leftPos = leftDriveSide.getPos();
-					double rightPos = rightDriveSide.getPos();
+					double leftPos = getLeftSidePos();
+					double rightPos = getRightSidePos();
 					
 					double avgPos = 0.5 * (leftPos + rightPos);
 					 
@@ -242,7 +249,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 				@Override
 				public double pidGet() 
 				{
-					return centerDriveSide.getPos();
+					return getCenterSidePos();
 				}
 		
 			};
@@ -279,11 +286,16 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 				}
 				
 			};
-
-
-
 			
 			
+			
+		
+			
+			
+			
+			
+			
+		
 			
 			
 			
@@ -343,21 +355,25 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		log.info("Setting Left Side PIDSource to motor L1");
 		
 		PIDSource leftVelPIDSource = new PIDSource()
-				{
-					@Override
-					public void setPIDSourceType(PIDSourceType pidSource) {}
+		{
+			@Override
+			public void setPIDSourceType(PIDSourceType pidSource) {}
 
-					@Override
-					public PIDSourceType getPIDSourceType() { return PIDSourceType.kRate; }
+			@Override
+			public PIDSourceType getPIDSourceType() { return PIDSourceType.kRate; }
 
-					@Override
-					public double pidGet() 
-					{ 
-						double rawVel = ((CANTalon)leftDriveSide.getMotors().get(1)).getEncVelocity();
-						return rawVel * leftSideData.encoder.distPerCount * (leftSideData.encoder.invert  ?  -1 : 1);
-					}
-						
-				};
+			@Override
+			public double pidGet() 
+			{ 
+				// get the raw velocity from the encoder
+				double rawVel = ((CANTalon)leftDriveSide.getMotors().get(1)).getEncVelocity();
+				
+				// scale from 100ms period to 1s period
+				rawVel *= 10;
+				return rawVel * leftSideData.encoder.distPerCount * (leftSideData.encoder.invert  ?  -1 : 1);
+			}
+				
+		};
 				
 		this.leftDriveSide.setVelocityPIDSource(leftVelPIDSource);
 		((CANTalon)leftDriveSide.getMotors().get(1)).setEncPosition(0);
@@ -383,6 +399,10 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			public double pidGet() 
 			{ 
 				double rawVel = ((CANTalon)rightDriveSide.getMotors().get(1)).getEncVelocity();
+				
+				// scale from 100ms period to 1s period
+				rawVel *= 10;
+				
 				return rawVel * rightSideData.encoder.distPerCount * (rightSideData.encoder.invert  ?  -1 : 1); 
 				
 			}
@@ -999,7 +1019,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	/**
 	 * gets the position of the left driveside
 	 */
-	public double getleftSidePos()
+	public double getLeftSidePos()
 	{
 		double rawPos = ((CANTalon)leftDriveSide.getMotors().get(1)).getEncPosition();
 		return rawPos * leftSideData.encoder.distPerCount * (leftSideData.encoder.invert  ?  -1 : 1);
@@ -1010,10 +1030,21 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	/**
 	 * gets the position of the right driveside
 	 */
-	public double getrightSidePos()
+	public double getRightSidePos()
 	{
 		double rawPos = ((CANTalon)rightDriveSide.getMotors().get(1)).getEncPosition();
 		return rawPos * rightSideData.encoder.distPerCount * (rightSideData.encoder.invert  ?  -1 : 1);
+	}
+	
+	
+	
+	/**
+	 * gets the position of the center driveside
+	 */
+	public double getCenterSidePos()
+	{
+		double rawPos = ((CANTalon)centerDriveSide.getMotors().get(0)).getEncPosition();
+		return rawPos * centerSideData.encoder.distPerCount * (centerSideData.encoder.invert  ?  -1 : 1);
 	}
 
 }

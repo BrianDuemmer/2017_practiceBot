@@ -16,7 +16,6 @@ import edu.wpi.first.wpilibj.PWM;
 import edu.wpi.first.wpilibj.PowerDistributionPanel;
 import edu.wpi.first.wpilibj.SensorBase;
 import edu.wpi.first.wpilibj.SpeedController;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.PIDSubsystem;
 import net.sf.microlog.core.Logger;
 
@@ -31,7 +30,6 @@ public class DriveSide extends PIDSubsystem implements Freeable
 {
 	// Encoder objects
 	PIDSource velocityPidSrc;
-	PIDSource positionPidSrc;
 	
 	// All of the motors
 	private List<SpeedController> motors;
@@ -129,7 +127,7 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	public void setVelocityPIDSource(PIDSource src)
 	{   
 		velocityPidSrc = src;   
-		velocityPidSrc.setPIDSourceType(PIDSourceType.kDisplacement);
+		velocityPidSrc.setPIDSourceType(PIDSourceType.kRate);
 	}
 	
 	
@@ -408,12 +406,6 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	public double getVel()
 	{
 		return velocityPidSrc.pidGet();
-	}
-	
-	
-	public double getPos()
-	{
-		return positionPidSrc.pidGet();
 	}
 	
 	
