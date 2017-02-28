@@ -118,6 +118,30 @@ public class VisionData
 	 * Default constructor, sets all args as 0 or false
 	 */
 	public VisionData() {}
+	
+	
+	
+	public byte[] buildDataPacket()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		// add one line for each variable (in order)
+		sb.append("BoundWidth:" + boundWidth + '\n');
+		sb.append("BoundHeight:" + boundHeight + '\n');
+		sb.append("BoundX:" + boundX + '\n');
+		sb.append("BoundY:" + boundY + '\n');
+		sb.append("DistanceError:" + distError + '\n');
+		sb.append("AngleError:" + angleError + '\n');
+		sb.append("MeasuredDistance:" + measuredDist + '\n');
+		sb.append("MeasuredAngle:" + measuredAngle + '\n');
+		sb.append("ClearToShoot:" + clearToshoot + '\n');
+		sb.append("SeesGoal:" + seesGoal + '\n');
+		
+		// convert to byte array
+		byte[] dataOut = sb.toString().getBytes();
+		
+		return dataOut;
+	}
 
 
 

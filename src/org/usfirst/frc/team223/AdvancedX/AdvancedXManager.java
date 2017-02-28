@@ -6,7 +6,6 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
 
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
 import net.sf.microlog.core.Logger;

@@ -11,6 +11,7 @@ public class IntakeControl extends Command {
 
     public IntakeControl() {
     	requires(Robot.intake);
+    	setInterruptible(true);
     }
 
 

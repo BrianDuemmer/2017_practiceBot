@@ -124,6 +124,8 @@ public class LinearFeedInterpolator
 			log.info("final velocity and distance do not have matching sign! setting final velocity to 0");
 			finalVel = 0;
 		}
+		
+		log.info("LFI specs: v0: " +currVel+ "   vf: " +finalVel+ "   aMax: " +kAmax+ "   vMax: " +kVmax);
 
 
 

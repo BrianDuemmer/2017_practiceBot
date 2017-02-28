@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<project name ="makeAdvancedX" default="make">
+
+	<target name="make">
+		
+		<delete failonerror="false">
+			<fileset file="${basedir}/AdvancedX.jar" />
+			<fileset file="${basedir}/AdvancedX-src.jar"/>
+		</delete>
+		
+		
+		<jar destfile="${basedir}/AdvancedX.jar">
+			<fileset dir="${basedir}/build" >
+				<exclude name="**/robot/**" />
+			</fileset>
+		</jar>
+		
+		<jar destfile="${basedir}/AdvancedX-src.jar">
+			<fileset dir="${basedir}/src" >
+				<exclude name="**/robot/**" />
+			</fileset>
+		</jar>
+	</target>
+</project>

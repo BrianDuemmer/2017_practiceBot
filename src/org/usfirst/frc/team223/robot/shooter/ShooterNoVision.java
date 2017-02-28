@@ -15,6 +15,7 @@ public class ShooterNoVision extends Command
 	public ShooterNoVision()
 	{
 		requires(Robot.shooter);
+//		requires(Robot.intake);
 	}
 	
 	
@@ -32,6 +33,7 @@ public class ShooterNoVision extends Command
 		// Set the setpoint to the target RPMs and enable the PID
 		Robot.shooter.getShooterPID().setSetpoint(Robot.shooter.shooterTargetRPM);
 		Robot.shooter.getShooterPID().enable();
+		Robot.intake.setOutput(1);
 		
 		// run the auger
 		runAuger();
@@ -46,8 +48,9 @@ public class ShooterNoVision extends Command
 		Robot.shooter.getShooterPID().setSetpoint(0);
 		Robot.shooter.getShooterPID().disable();
 		
-		// turn off the auger
+		// turn off the auger and intake
 		Robot.shooter.augerMotor.set(0);
+		Robot.intake.setOutput(0);
 	}
 
 	

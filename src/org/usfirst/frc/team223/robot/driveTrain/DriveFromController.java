@@ -26,14 +26,14 @@ public class DriveFromController extends Command {
     		Robot.drive.setDriveType(driveType.FULL_TRACTION);
     	
     	else if(Robot.oi.button_dL.get())
-    		Robot.drive.setDriveType(driveType.REAR_TRACTION);
+    		Robot.drive.setDriveType(driveType.FRONT_TRACTION);
     	
     	else
     		Robot.drive.setDriveType(driveType.FULL_OMNI);
     	
     	
     	// set the Drive motor output
-    	double fwd = Robot.oi.stick_dL.getY();
+    	double fwd = Robot.oi.stick_dL.getY() * -1;
     	double strafe = Robot.oi.stick_dL.getX();
     	double turn = Robot.oi.stick_dR.getX();
     	
