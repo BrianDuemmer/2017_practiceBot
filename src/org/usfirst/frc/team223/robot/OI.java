@@ -86,10 +86,11 @@ public OI() {
 		stick_oR.setParams(false, true, 0.1, 1);
 		
 		/////////////////////////// Driver Buttons ////////////////////////////
-		button_dA.whenActive(new G1XYMovement(5, 0, false));
+		button_dA.whenActive(new G1XYMovement(10, 0, false));
 		button_dB.whenActive(new G1XYMovement(0, 10, true));
+//		button_dX.whenActive(new G2ArcMovement(0.00001, 90, true));
 		button_dX.whenActive(new G2ArcMovement(3, 90, true));
-		button_dY.whenActive(new G2ArcMovement(0.0001, 90, true));
+		button_dY.whenActive(new G2ArcMovement(0.00001, -90, true));
 		button_dBack.whileActive(new DriveTrainAbort());
 
 		

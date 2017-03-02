@@ -38,6 +38,7 @@ public class cameraAlign extends Command
 		this.maxFailureCt = maxFailureCt;
 
 		this.setTimeout(timeout);
+		this.setInterruptible(true);
 	}
 
 

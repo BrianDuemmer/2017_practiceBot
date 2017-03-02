@@ -148,6 +148,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 
 					manager.getNt().putNumber("leftOut", leftDriveSide.getMotors().get(0).get() * -1);
 					manager.getNt().putNumber("rightOut", rightDriveSide.getMotors().get(0).get());
+					manager.getNt().putNumber("centerOut", centerDriveSide.getMotors().get(0).get());
 
 					manager.getNt().putNumber("leftVelSet", leftDriveSide.getSetpoint());
 					manager.getNt().putNumber("rightVelSet", rightDriveSide.getSetpoint());
@@ -182,7 +183,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	private double centerRateAction;
 
 	
-	private LinearFeedInterpolator distInterpolator;
+	LinearFeedInterpolator distInterpolator;
 
 	
 	// Forward position PID Conroller
@@ -346,7 +347,9 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		
 		// Master PIDs
 		fwdPosPID = allocator.allocatePID(fwdPosPIDData, fwdPosPIDSource, fwdPosPIDOutput);
+		
 		centerPosPID = allocator.allocatePID(centerPosPIDData, centerPosPIDSource, centerPosPIDOutput);
+		
 		turnPosPID = allocator.allocatePID(turnPosPIDData, turnPosPIDSource, turnPosPIDOutput);
 		
 		// Left driveside
@@ -579,11 +582,14 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		this.resetPIDs();
 		
 		// set the turning PID to maintain the current yaw
-		turnPosPID.setSetpoint(getAngle());
+//		turnPosPID.setSetpoint(getAngle());
+		
+		// convert heading to radians
+		heading = Math.toRadians(heading);
 		
 		// scalars for the forward / center velocities and positions
 		double fwdScalar = Math.abs(Math.cos(heading));
-		double centerScalar = Math.abs(Math.sin(heading));
+		double centerScalar = Math.abs(Math.sin(-1*heading));
 		
 		
 		
@@ -634,7 +640,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		
 		
 		// loop until the LFI says we are done
-		while(distInterpolator.isActive())
+		while(!Robot.oi.button_dBack.get() && (distInterpolator.isActive() || (!fwdPosPID.onTarget() && centerPosPID.onTarget())))
 		{	
 			// feed the master PIDs
 			fwdPosPID.setSetpoint(distInterpolator.getTargetPos() * fwdScalar);
@@ -645,7 +651,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			centerRateAction = distInterpolator.getTargetVel() * centerScalar;
 			
 			// feed the slave PIDs
-			this.feedSlavePIDs(fwdRateAction, fwdRateAction, centerRateAction, fwdDistAction, centerDistAction, turnPosAction);
+			this.feedSlavePIDs(fwdRateAction, fwdRateAction, centerRateAction, fwdDistAction, centerDistAction, /*turnPosAction*/ 0);
 		
 			//delay for a bit
 			Timer.delay(leftSideData.pid.period / 2);
@@ -670,7 +676,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	{
 		// heading angle, with navigation orientation
 		double heading = (Math.PI / 2) - Math.atan2(fwdDist, xDist);
-		heading *= Math.PI / 180;
+		heading = Math.toDegrees(heading);
 		
 		// total distance to travel
 		double distance = Math.sqrt(fwdDist*fwdDist + xDist*xDist);
@@ -695,7 +701,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		log.info("Starting a new G2Arc sequence with radius " +radius+ "  and angle of: " +angleChange + "  and final velocity of: " +finalVel);
 		
 		// gyro angle at the start of the interpolation
-		double startAngle = Math.toRadians(getAngle());
+		double startAngle = getAngle();
 		
 		// check for illegal moves
 		
@@ -717,6 +723,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 //		
 //		angleChange = Math.abs(angleChange);
 		
+		
 		// convert angle to radians
 		angleChange = Math.toRadians(angleChange);		
 		
@@ -730,14 +737,15 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			rightDist = angleChange * (radius - 0.5*wheelbaseWidth);
 		} else
 		{
-			leftDist = angleChange * -1 * (radius - 0.5*wheelbaseWidth);
-			rightDist = angleChange * -1 * (radius + 0.5*wheelbaseWidth);
+			leftDist = -angleChange * (radius - 0.5*wheelbaseWidth);
+			rightDist = -angleChange * (radius + 0.5*wheelbaseWidth);
+			log.info("negAngle");
 		}
 		
-		double nominalDist = Math.abs(angleChange) * radius;
+		double nominalDist = angleChange * radius;
 			
 		// calculate LFI scalar, as the nominal robot velocity will be different from the velocities of the left and right sides
-		double lfiScalar = Math.max(Math.abs(leftDist), Math.abs(rightDist)) / nominalDist;
+		double lfiScalar = Math.max(Math.abs(leftDist), Math.abs(rightDist)) / Math.abs(nominalDist);
 		
 		// get the master PIDs ready
 		resetPIDs();
@@ -753,10 +761,10 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		
 		
 		
-		
+		log.info("ldist: " + leftDist + "  rdist: " +rightDist+ "   lfiScl: " +lfiScalar);
 		
 		// loop for the duration of the interpolation
-		while(distInterpolator.isActive())
+		while(!Robot.oi.button_dBack.get() && (distInterpolator.isActive()  || /*!turnPosPID.onTarget()*/ turnPosPID.getError() < turnPosPIDData.tolerance))
 		{
 			//delay for a bit
 			Timer.delay(leftSideData.pid.period);
@@ -767,14 +775,44 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			
 			// feed master PIDs
 			fwdPosPID.setSetpoint(sNominal);
-			turnPosPID.setSetpoint(Math.toDegrees((sNominal / nominalDist) * angleChange + startAngle));
+			turnPosPID.setSetpoint(Math.toDegrees((sNominal / Math.abs(nominalDist)) * angleChange) + startAngle);
 			
 			// calculate adjusted forward distance
 			double adjFwd = fwdDistAction / lfiScalar;
 			
+			double leftVel;
+			double rightVel;
+		
+			
 			// calculate rate actions, factoring in for forward rate action
-			double leftVel = ((vNominal + adjFwd)/radius) * (radius + wheelbaseWidth);
-			double rightVel = ((vNominal + adjFwd)/radius) * (radius - wheelbaseWidth);
+			leftVel = ((vNominal + adjFwd)/radius) * (radius + Math.signum(angleChange)*wheelbaseWidth * 0.5);
+			rightVel = ((vNominal + adjFwd)/radius) * (radius - Math.signum(angleChange)*wheelbaseWidth * 0.5);
+//				
+//			double k = 1.4;
+//			
+//			if(angleChange > 0)
+//			{
+//				leftVel *= k;
+//				rightVel /= k;
+//			} else 
+//			{
+//				leftVel /= k;
+//				rightVel *= k;
+//			}
+	
+//			double velA = (radius + 0.5*wheelbaseWidth) * ((vNominal + adjFwd) / radius); 
+//			double velB = (radius - 0.5*wheelbaseWidth) * ((vNominal + adjFwd) / radius); 
+//			
+//			if(angleChange > 0)
+//			{
+//				leftVel = velA;
+//				rightVel = velB;
+//			} else
+//			{
+//				leftVel = velB;
+//				rightVel = velA;
+//			}
+			
 			
 			// feed the slaves, knowing that the forward distance action has already been factored in
 			feedSlavePIDs(leftVel, rightVel, 0, 0, 0, turnPosAction);
@@ -827,8 +865,13 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		((CANTalon)centerDriveSide.getMotors().get(0)).setEncPosition(0);
 		
 		fwdPosPID.reset();
+		fwdPosPID.setSetpoint(0);
+		
 		centerPosPID.reset();
+		centerPosPID.setSetpoint(0);
+		
 		turnPosPID.reset();
+		turnPosPID.setSetpoint(0);
 		
 		// reset the drivesides
 		leftDriveSide.setRawOutput(0);

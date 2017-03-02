@@ -19,6 +19,8 @@ public class G2ArcMovement extends Command
 		this.type = useTraction ? driveType.FULL_TRACTION : driveType.FULL_OMNI;
 		this.radius = radius;
 		this.angle = angle;
+		
+		this.setInterruptible(true);
 
 		requires(Robot.drive);
 	}

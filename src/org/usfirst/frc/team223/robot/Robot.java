@@ -44,6 +44,8 @@ public class Robot extends IterativeRobot
 	
 	public static PiVisionClient visionClient;
 	
+	public static Autonomous auto = new Autonomous();
+	
 	// global debug mode flag
 	public static boolean isDebug = true;
 	private static DigitalInput debugPin;
@@ -65,7 +67,7 @@ public class Robot extends IterativeRobot
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
-	 */
+	 */ 
 	@Override
 	public void robotInit() 
 	{
@@ -148,7 +150,7 @@ public class Robot extends IterativeRobot
 	public void autonomousInit() 
 	{
 		log.info("Entering Autonomous...");
-
+		auto.approachGear1(2);
 	}
 
 	

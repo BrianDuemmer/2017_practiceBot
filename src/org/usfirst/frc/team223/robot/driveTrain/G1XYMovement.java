@@ -19,6 +19,8 @@ public class G1XYMovement extends Command
 		this.type = useTraction ? driveType.FULL_TRACTION : driveType.FULL_OMNI;
 		this.yDist = yDist;
 		this.xDist = xDist;
+		
+		this.setInterruptible(true);
 
 		requires(Robot.drive);
 	}
