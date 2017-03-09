@@ -562,13 +562,13 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		
 		
 		
-		if(this.currDriveType == driveType.FULL_OMNI)
+		if(this.currDriveType != driveType.FULL_OMNI)
 			strafe = 0;
 		
 		// calc the raw output for each wheel
-		double lf = fwd - strafe + turn;
+		double lf = fwd + strafe + turn;
 		double rf = fwd - strafe - turn;
-		double lr = fwd + strafe + turn;
+		double lr = fwd - strafe + turn;
 		double rr = fwd + strafe - turn;
 		
 		// get the wheel output with the largest abs()
