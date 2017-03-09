@@ -551,44 +551,44 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	@Override
 	public void setRawOutput(double fwd, double strafe, double turn) 
 	{
-		if(this.currDriveType == driveType.FULL_OMNI)
-			centerDriveSide.setRawOutput(0);
-		else
-			centerDriveSide.setRawOutput(strafe);
-		
-		 leftDriveSide.setRawOutput(fwd + turn);
-		 rightDriveSide.setRawOutput(fwd - turn);
-		
-		
-		
-		
 //		if(this.currDriveType == driveType.FULL_OMNI)
-//			strafe = 0;
+//			centerDriveSide.setRawOutput(0);
+//		else
+//			centerDriveSide.setRawOutput(strafe);
 //		
-//		// calc the raw output for each wheel
-//		double lf = fwd - strafe + turn;
-//		double rf = fwd - strafe - turn;
-//		double lr = fwd + strafe + turn;
-//		double rr = fwd + strafe - turn;
-//		
-//		// get the wheel output with the largest abs()
-//		double scalar = Math.max(Math.max(Math.abs(rr), Math.abs(lr)), Math.max(Math.abs(rf), Math.abs(lf)));
-//		
-//		// divide by the scalar, if necessary
-//		if(scalar > 1)
-//		{
-//			lf /= scalar;
-//			rf /= scalar;
-//			lr /= scalar;
-//			rr /= scalar;
-//		}
-//		
-//		// set the outputs
-//		leftDriveSide.getMotors().get(0).set(lf);
-//		leftDriveSide.getMotors().get(1).set(lr);
-//		
-//		rightDriveSide.getMotors().get(0).set(rf);
-//		rightDriveSide.getMotors().get(1).set(rr);
+//		 leftDriveSide.setRawOutput(fwd + turn);
+//		 rightDriveSide.setRawOutput(fwd - turn);
+		
+		
+		
+		
+		if(this.currDriveType == driveType.FULL_OMNI)
+			strafe = 0;
+		
+		// calc the raw output for each wheel
+		double lf = fwd - strafe + turn;
+		double rf = fwd - strafe - turn;
+		double lr = fwd + strafe + turn;
+		double rr = fwd + strafe - turn;
+		
+		// get the wheel output with the largest abs()
+		double scalar = Math.max(Math.max(Math.abs(rr), Math.abs(lr)), Math.max(Math.abs(rf), Math.abs(lf)));
+		
+		// divide by the scalar, if necessary
+		if(scalar > 1)
+		{
+			lf /= scalar;
+			rf /= scalar;
+			lr /= scalar;
+			rr /= scalar;
+		}
+		
+		// set the outputs
+		leftDriveSide.getMotors().get(0).set(lf);
+		leftDriveSide.getMotors().get(1).set(lr);
+		
+		rightDriveSide.getMotors().get(0).set(rf);
+		rightDriveSide.getMotors().get(1).set(rr);
 
 	}
 	
