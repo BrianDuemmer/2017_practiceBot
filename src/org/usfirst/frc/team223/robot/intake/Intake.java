@@ -16,7 +16,7 @@ import net.sf.microlog.core.Logger;
 public class Intake extends Subsystem 
 {
 	
-	private MotorData motorData;
+	MotorData motorData;
 	private SpeedController motor;
 	private AdvancedXManager manager;
 	

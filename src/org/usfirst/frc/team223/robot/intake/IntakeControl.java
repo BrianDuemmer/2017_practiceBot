@@ -21,7 +21,14 @@ public class IntakeControl extends Command {
 
     protected void execute() 
     {
-    	double out = Robot.oi.operatorController.getRawAxis(3) - Robot.oi.operatorController.getRawAxis(2);
+//    	double out = Robot.oi.operatorController.getRawAxis(3) - Robot.oi.operatorController.getRawAxis(2);
+    	double out = 0;
+    	if(Robot.oi.button_oR.get())
+    		out = -1*Robot.intake.motorData.maxOut;
+    	
+    	else if(Robot.oi.button_oL.get())
+    		out = Robot.intake.motorData.maxOut;
+    	
     	Robot.intake.setOutput(out);
     }
 

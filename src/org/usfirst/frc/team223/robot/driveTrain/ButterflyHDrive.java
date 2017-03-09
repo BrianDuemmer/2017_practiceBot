@@ -551,14 +551,44 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	@Override
 	public void setRawOutput(double fwd, double strafe, double turn) 
 	{
-		this.leftDriveSide.setRawOutput(fwd + turn);
-		this.rightDriveSide.setRawOutput(fwd - turn);
-
 		if(this.currDriveType == driveType.FULL_OMNI)
-			this.centerDriveSide.setRawOutput(strafe);
-
+			centerDriveSide.setRawOutput(0);
 		else
-			this.centerDriveSide.setRawOutput(0);
+			centerDriveSide.setRawOutput(strafe);
+		
+		 leftDriveSide.setRawOutput(fwd + turn);
+		 rightDriveSide.setRawOutput(fwd - turn);
+		
+		
+		
+		
+//		if(this.currDriveType == driveType.FULL_OMNI)
+//			strafe = 0;
+//		
+//		// calc the raw output for each wheel
+//		double lf = fwd - strafe + turn;
+//		double rf = fwd - strafe - turn;
+//		double lr = fwd + strafe + turn;
+//		double rr = fwd + strafe - turn;
+//		
+//		// get the wheel output with the largest abs()
+//		double scalar = Math.max(Math.max(Math.abs(rr), Math.abs(lr)), Math.max(Math.abs(rf), Math.abs(lf)));
+//		
+//		// divide by the scalar, if necessary
+//		if(scalar > 1)
+//		{
+//			lf /= scalar;
+//			rf /= scalar;
+//			lr /= scalar;
+//			rr /= scalar;
+//		}
+//		
+//		// set the outputs
+//		leftDriveSide.getMotors().get(0).set(lf);
+//		leftDriveSide.getMotors().get(1).set(lr);
+//		
+//		rightDriveSide.getMotors().get(0).set(rf);
+//		rightDriveSide.getMotors().get(1).set(rr);
 
 	}
 	
@@ -569,6 +599,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	/**
 	 * Drives the robot in a G1(linear) fashion between two points, while maintaining the same
 	 * heading angle
+	 * 
+	 * @deprecated use the command version of this instead
 	 * 
 	 * @param heading, in degrees relative to the robot in the navigation frame, that the robot will travel at
 	 * @param distance the distance that the robot will travel
@@ -588,8 +620,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		heading = Math.toRadians(heading);
 		
 		// scalars for the forward / center velocities and positions
-		double fwdScalar = Math.abs(Math.cos(heading));
-		double centerScalar = Math.abs(Math.sin(-1*heading));
+		double fwdScalar = Math.cos(heading);
+		double centerScalar = Math.sin(-1*heading);
 		
 		
 		
@@ -668,6 +700,9 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	/**
 	 * Drives the robot in a G1(linear) fashion between two points, while maintaining the same
 	 * heading angle
+	 * 
+	 * @deprecated use the command version of this instead
+	 * 
 	 * @param xDist the horizontal distance to travel
 	 * @param fwdDist the distance to travel forward
 	 * @param finalVel the velocity of the robot when it reaches the destination position
@@ -691,6 +726,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	
 	/**
 	 * Drives the robot in a G2(arc) interpolation, around a certain radius and for a certain number of degrees
+	 * 
+	 * @deprecated use the command version of this instead
 	 * 
 	 * @param radius the radius of the arc
 	 * @param angleChange the angle, in degrees, of the arc that the robot will travel on
@@ -763,11 +800,20 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		
 		log.info("ldist: " + leftDist + "  rdist: " +rightDist+ "   lfiScl: " +lfiScalar);
 		
+		boolean pastSet = false;
+		
 		// loop for the duration of the interpolation
-		while(!Robot.oi.button_dBack.get() && (distInterpolator.isActive()  || /*!turnPosPID.onTarget()*/ turnPosPID.getError() < turnPosPIDData.tolerance))
+		while(!Robot.oi.button_dBack.get() && (distInterpolator.isActive()  || !pastSet))
 		{
 			//delay for a bit
 			Timer.delay(leftSideData.pid.period);
+			
+			if(angleChange > 0)
+				pastSet = getAngle() + turnPosPIDData.tolerance > startAngle + Math.toDegrees(angleChange);
+			else
+				pastSet = getAngle() - turnPosPIDData.tolerance < startAngle + Math.toDegrees(angleChange);
+			
+			manager.getNt().putBoolean("pastSet", pastSet);
 			
 			// nominal velocity / position
 			double vNominal = distInterpolator.getTargetVel();
@@ -817,6 +863,9 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 			// feed the slaves, knowing that the forward distance action has already been factored in
 			feedSlavePIDs(leftVel, rightVel, 0, 0, 0, turnPosAction);
 		}
+		
+		resetPIDs();
+		setRawOutput(0, 0, 0);
 		
 	}
 	
@@ -874,8 +923,13 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 		turnPosPID.setSetpoint(0);
 		
 		// reset the drivesides
+		leftDriveSide.setSetpoint(0);
 		leftDriveSide.setRawOutput(0);
+		
+		rightDriveSide.setSetpoint(0);
 		rightDriveSide.setRawOutput(0);
+		
+		centerDriveSide.setSetpoint(0);
 		centerDriveSide.setRawOutput(0);
 		
 		// delay for a tad so the changes take effect
@@ -1016,7 +1070,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 	 * and which should be traction
 	 * @param currDriveType
 	 */
-	public void setDriveType(driveType currDriveType) 
+	public void setDriveType(driveType currDriveType, boolean force) 
 	{
 		// make sure a null hasn't been passed
 		if(currDriveType == null)
@@ -1027,7 +1081,7 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 
 
 		// log the change, if there is one
-		if(currDriveType != this.currDriveType)
+		if(currDriveType != this.currDriveType || force)
 			log.info("Drive mode is now " + currDriveType);
 		
 		// return if there is not a change

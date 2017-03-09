@@ -2,17 +2,17 @@ package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
 import org.usfirst.frc.team223.AdvancedX.vision.PiVisionClient;
 import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive;
 import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
-import org.usfirst.frc.team223.robot.hangar.HangDebug;
+import org.usfirst.frc.team223.robot.gear.GearThing;
+import org.usfirst.frc.team223.robot.hangar.HangControl;
 import org.usfirst.frc.team223.robot.hangar.Hangar;
 import org.usfirst.frc.team223.robot.intake.Intake;
 import org.usfirst.frc.team223.robot.intake.IntakeControl;
 import org.usfirst.frc.team223.robot.shooter.Shooter;
-import org.usfirst.frc.team223.robot.shooter.ShooterManual;
+import org.usfirst.frc.team223.robot.shooter.ShooterNoVision;
 
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.IterativeRobot;
@@ -35,16 +35,19 @@ public class Robot extends IterativeRobot
 	// OI and Subsystems
 	public static OI oi;
 	
+	
+	
 	public static ButterflyHDrive drive;
 	public static Hangar hangar;
 	public static Intake intake;
 	public static Shooter shooter;
+	public static GearThing gear;
 	
 	public static PowerDistributionPanel pdp;
 	
 	public static PiVisionClient visionClient;
 	
-	public static Autonomous auto = new Autonomous();
+	public static Autonomous auto;
 	
 	// global debug mode flag
 	public static boolean isDebug = true;
@@ -55,8 +58,6 @@ public class Robot extends IterativeRobot
 	public static AdvancedXManager manager;
 	public static RoboLogManagerBase logBase;
 	
-	// parser for auto configuration file
-	public static GXMLparser autoParser;
 
 	// logging object (for Robot.java) only
 	static Logger log;
@@ -88,18 +89,20 @@ public class Robot extends IterativeRobot
 				int visionPort = (int) obtainParser().getKeyByPath("VisionServer/port", BASIC_TYPE.INT);
 				String visionAddress = (String) obtainParser().getKeyByPath("VisionServer/address", BASIC_TYPE.STRING);
 				
-				visionClient = new PiVisionClient(visionAddress, visionPort, this.getRoboLogger().getLogger("VisionClient"));
+//				visionClient = new PiVisionClient(visionAddress, visionPort, this.getRoboLogger().getLogger("VisionClient"));
 				debugPin = new DigitalInput((int) obtainParser().getKeyByPath("debugPin", BASIC_TYPE.INT));
 				
 				intake = new Intake(manager);
 				hangar = new Hangar(manager);
 				shooter = new Shooter(manager);
 				drive = new ButterflyHDrive(manager);
+				gear = new GearThing(manager);
+				auto = new Autonomous(manager);
 				
 				drive.setDefaultCommand(new DriveFromController());
 				intake.setDefaultCommand(new IntakeControl());
-				shooter.setDefaultCommand(new ShooterManual());
-				hangar.setDefaultCommand(new HangDebug());
+				shooter.setDefaultCommand(new ShooterNoVision());
+				hangar.setDefaultCommand(new HangControl());
 				
 				oi = new OI();
 				
@@ -119,8 +122,7 @@ public class Robot extends IterativeRobot
 		};
 		
 
-		nt = manager.getNt();
-
+		nt = manager.initNT();
 		manager.start(1000);
 
 	}
@@ -134,6 +136,7 @@ public class Robot extends IterativeRobot
 	public void disabledInit() 
 	{
 		log.info("Entering Disabled mode...");
+		generalInit();
 	}
 
 	
@@ -143,14 +146,20 @@ public class Robot extends IterativeRobot
 		Scheduler.getInstance().run();
 		nt.putNumber("theTime", Timer.getFPGATimestamp());
 		generalPeriodic();
+		
+		if(drive != null)
+		{
+			drive.resetPIDs();
+		}
 	}
 
 
+	
 	@Override
 	public void autonomousInit() 
 	{
-		log.info("Entering Autonomous...");
-		auto.approachGear1(2);
+		generalInit();
+		auto.execAuto();
 	}
 
 	
@@ -170,6 +179,7 @@ public class Robot extends IterativeRobot
 	public void teleopInit() 
 	{
 		log.info("Entering Teleop...");
+		generalInit();
 	}
 
 	
@@ -203,6 +213,14 @@ public class Robot extends IterativeRobot
 	{
 		isDebug = !debugPin.get();
 		manager.getNt().putBoolean("debugEnabled", isDebug);
+	}
+	
+	
+	
+	public void generalInit()
+	{
+		// set the drive type
+//		drive.setDriveType(oi.button_dR.get()  ?  driveType.FULL_TRACTION : driveType.FULL_OMNI, true);
 	}
 	
 }

@@ -8,17 +8,17 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  *
  */
-public class G2ArcMovement extends Command 
+public class G1XYMovement_old extends Command 
 {
-	private double radius;
-	private double angle;
+	private double xDist;
+	private double yDist;
 	private driveType type;
 
-	public G2ArcMovement(double radius, double angle, boolean useTraction) 
+	public G1XYMovement_old(double xDist, double yDist, boolean useTraction) 
 	{
 		this.type = useTraction ? driveType.FULL_TRACTION : driveType.FULL_OMNI;
-		this.radius = radius;
-		this.angle = angle;
+		this.yDist = yDist;
+		this.xDist = xDist;
 		
 		this.setInterruptible(true);
 
@@ -31,7 +31,7 @@ public class G2ArcMovement extends Command
 		if(Robot.isDebug)
 		{
 			Robot.drive.setDriveType(type, true);
-			Robot.drive.drive_G2Arc(radius, angle, 0);
+			Robot.drive.drive_G1xyCartesian(xDist, yDist, 0);
 		}
 	}
 

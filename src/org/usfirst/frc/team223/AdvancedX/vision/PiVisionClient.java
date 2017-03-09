@@ -39,6 +39,7 @@ public class PiVisionClient implements Runnable
 	{
 		this.serverAddress = address;
 		this.serverPort = port;
+		this.log = log;
 		
 		// initialize the server
 		log.info("Creating new VisionClient...");

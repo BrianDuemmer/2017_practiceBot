@@ -99,7 +99,21 @@ public abstract class AdvancedXManager implements Runnable
 		this.logger = roboLogManagerBase.getLogger("AdvancedXManager_" + namespace);
 		this.logger.info("Starting AdvancedXManager...");
 
+		// construct the keys
+		this.handshakeKey = "CONFIGXML_" + this.namespace + "_RELOAD";
+		this.fileNameKey = "CONFIGXML_" + this.namespace + "_FILENAME";
+		this.successKey = "CONFIGXML_" + this.namespace + "_SUCCESS";
 
+		this.destroyer = new Destroyer(this.roboLogManagerBase.getLogger("DESTROYER"));
+	}
+	
+	
+	
+	/**
+	 * Sets up the Network Tables server
+	 */
+	public NetworkTable initNT()
+	{
 		// attempt to initialize NetworkTables
 		logger.info("Attempting to initialize NetworkTables...");
 		try
@@ -113,15 +127,8 @@ public abstract class AdvancedXManager implements Runnable
 		catch(Exception e){
 			logger.fatal("Failed to initialize networkTables! DETAILS: ", e);
 		}
-
-
-
-		// construct the keys
-		this.handshakeKey = "CONFIGXML_" + this.namespace + "_RELOAD";
-		this.fileNameKey = "CONFIGXML_" + this.namespace + "_FILENAME";
-		this.successKey = "CONFIGXML_" + this.namespace + "_SUCCESS";
-
-		this.destroyer = new Destroyer(this.roboLogManagerBase.getLogger("DESTROYER"));
+		
+		return nt;
 	}
 
 
@@ -380,6 +387,12 @@ public abstract class AdvancedXManager implements Runnable
 	public boolean destroy(Object obj)
 	{
 		return this.destroyer.destroy(obj);
+	}
+
+
+
+	public void setNt(NetworkTable nt) {
+		this.nt = nt;
 	}
 
 }

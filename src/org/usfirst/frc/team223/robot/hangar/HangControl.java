@@ -22,7 +22,8 @@ public class HangControl extends Command {
     
     protected void execute() 
     {
-    	Robot.hangar.setOutput(1);
+    	double out = Robot.oi.operatorController.getRawAxis(2);
+    	Robot.hangar.setOutput(out);
     }
 
     

@@ -8,13 +8,13 @@ import edu.wpi.first.wpilibj.command.Command;
 /**
  *
  */
-public class G2ArcMovement extends Command 
+public class G2ArcMovement_old extends Command 
 {
 	private double radius;
 	private double angle;
 	private driveType type;
 
-	public G2ArcMovement(double radius, double angle, boolean useTraction) 
+	public G2ArcMovement_old(double radius, double angle, boolean useTraction) 
 	{
 		this.type = useTraction ? driveType.FULL_TRACTION : driveType.FULL_OMNI;
 		this.radius = radius;

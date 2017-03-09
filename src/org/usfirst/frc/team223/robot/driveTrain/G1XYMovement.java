@@ -30,7 +30,7 @@ public class G1XYMovement extends Command
 	{
 		if(Robot.isDebug)
 		{
-			Robot.drive.setDriveType(type);
+			Robot.drive.setDriveType(type, true);
 			Robot.drive.drive_G1xyCartesian(xDist, yDist, 0);
 		}
 	}
