@@ -1,16 +1,25 @@
 package org.usfirst.frc.team223.robot.gear;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
+import org.usfirst.frc.team223.AdvancedX.robotParser.SolenoidData;
 
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.command.Subsystem;
 import net.sf.microlog.core.Logger;
 
-public class GearThing 
+public class GearThing extends Subsystem
 {
 	// time that the robot will dwell when dropping a gear
-	private double dropTime;
+	double dropTime;
+	
+	SolenoidData puncherData;
+	Solenoid puncher;
+	
+	SolenoidData jawsData;
+	Solenoid jaws;
 	
 	Logger log;
 
@@ -22,22 +31,25 @@ public class GearThing
 		
 		// parse data
 		log.info("Parsing gear data...");
-		dropTime = (Double) parser.getKeyByPath("Gear/dropTime", BASIC_TYPE.DOUBLE);
+		dropTime = (Double) parser.getKeyByPath("Gear/dropTime", BasicType.DOUBLE);
+		
+		puncherData = parser.parseSolenoid("Gear/puncher");
+		jawsData = parser.parseSolenoid("Gear/jaws");
+		
 		log.info("finished parsing gear data");
 		
+		
+		// allocate the objects
+		log.info("Allocating gear data...");
+		
+		GXMLAllocator allocator = manager.obtainAllocator();
+		puncher = allocator.allocateSolenoid(puncherData);
+		jaws =  allocator.allocateSolenoid(jawsData);
+		
+		log.info("Finished allocating gear data");
 	}
-	
-	
-	
-	/**
-	 * deposits the gear onto the peg. For now this only is a delay, but it may later 
-	 * incorporate actuations and vision targeting as we see fit
-	 */
-	public void dropGear()
-	{
-		log.info("Preparing to drop gear...");
-		Timer.delay(dropTime);
-		log.info("Finished dropping gear");
-	}
+
+	@Override
+	protected void initDefaultCommand() {}
 
 }

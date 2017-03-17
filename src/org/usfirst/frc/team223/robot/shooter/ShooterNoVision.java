@@ -22,7 +22,6 @@ public class ShooterNoVision extends Command
 
 	public void initialize()
 	{
-
 	}
 
 
@@ -32,31 +31,27 @@ public class ShooterNoVision extends Command
 		// Set the setpoint to the target RPMs and enable the PID
 		if(Robot.oi.operatorController.getRawAxis(3) > 0.75)
 		{
-			if(!prevEnabled)
+			if(!prevEnabled) // rising edge of button
 			{
 				Robot.shooter.log.info("Entering ShooterNoVisionCommand");
-				upToSpeed = false;
-				Robot.shooter.getShooterPID().reset();
+				Robot.shooter.bringUpToSpeed();
 			}
 
 			prevEnabled = true;
-
-			Robot.shooter.getShooterPID().setSetpoint(Robot.shooter.shooterTargetRPM);
-			Robot.shooter.getShooterPID().enable();
 			Robot.intake.setOutput(1);
 
-			// run the auger
-			runAuger();
-		} else if(Robot.oi.operatorController.getRawAxis(3) < 0.75 && prevEnabled)
+			// run the auger if we are up to speed
+			if(Robot.shooter.isUpToSpeed())  { Robot.shooter.augerMotor.set(1); }
+			else { Robot.shooter.augerMotor.set(0); }
+			
+			
+		} else if(Robot.oi.operatorController.getRawAxis(3) < 0.75 && prevEnabled) // falling edge of button
 		{
 			end();
 			prevEnabled = false;
 		}
 
-		else
-		{
-			prevEnabled = false;
-		}
+		else  { prevEnabled = false; }
 
 	}
 
@@ -65,8 +60,7 @@ public class ShooterNoVision extends Command
 	{
 		Robot.shooter.log.info("Exiting ShooterNoVision command");
 		// turn off the PID
-		Robot.shooter.getShooterPID().setSetpoint(0);
-		Robot.shooter.getShooterPID().disable();
+		Robot.shooter.spinDown();
 
 		// turn off the auger and intake
 		Robot.shooter.augerMotor.set(0);
@@ -74,28 +68,7 @@ public class ShooterNoVision extends Command
 
 
 	@Override
-	protected boolean isFinished() {
-		return false;
-	}
-
-
-
-	/**
-	 * Updates the auger output, and does the jam check
-	 */
-	private void runAuger()
-	{
-		double target = Robot.shooter.shooterTargetRPM;
-
-		if(Math.abs(Robot.shooter.getShooterRPM() - target) / target < 0.1 || upToSpeed)
-		{
-			Robot.shooter.augerMotor.set(Robot.shooter.augerMotorData.maxOut);
-			upToSpeed = true;
-		}
-		else
-			Robot.shooter.augerMotor.set(0);
-	}
-
+	protected boolean isFinished() { return false;   }
 }
 
 

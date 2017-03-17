@@ -1,10 +1,12 @@
-package org.usfirst.frc.team223.robot;
+package org.usfirst.frc.team223.robot.auto;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.robotParser.EnumPair;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
+import org.usfirst.frc.team223.robot.Robot;
 import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive.driveType;
+import org.usfirst.frc.team223.robot.gear.DropGear;
 import org.usfirst.frc.team223.robot.shooter.ShooterNoVision;
 
 import edu.wpi.first.wpilibj.DriverStation;
@@ -14,13 +16,17 @@ import edu.wpi.first.wpilibj.command.Command;
 import net.sf.microlog.core.Logger;
 
 /**
- * This class contains all of the functions for autonomous, and each auto variant exists 
- * as a static function, which should be called in AutonomousInit()
+ * This class contains all of the functions for autonomous, and the correct autonomous function is
+ * selected from a config element, and 
  * 
  * @author Brian Duemmer
  */
-public class Autonomous
+public class Autonomous_old extends Command
 {
+	// length of auto period
+	public static final double AUTO_TIME = 15;
+	
+	
 	private static double towerDist = 10;
 	private static double towerWidth = 3.918;
 	private static double towerAngle = 30;
@@ -36,7 +42,6 @@ public class Autonomous
 	private static double boilerStrafeDist = 1;
 	private static double boilerTurnAngle = 30;
 	private static double boilerDwellTime = 8;
-	
 	private EnumPair autoSelect;
 	private boolean passAutoLine;
 	
@@ -50,20 +55,25 @@ public class Autonomous
 	/**
 	 * Loads all of the data and initialized autonomous
 	 */
-	public Autonomous(AdvancedXManager manager)
+	public Autonomous_old(AdvancedXManager manager)
 	{
-		log = manager.getRoboLogger().getLogger("Autonomous");
+		requires(Robot.drive);
+		requires(Robot.gear);
+		requires(Robot.intake);
+		requires(Robot.shooter);
+		
+		log = manager.getRoboLogger().getLogger("Autonomous_old");
 		
 		GXMLparser parser = manager.obtainParser();
 		
-		autoSelect = (EnumPair)parser.getKeyByPath("auto/mode", BASIC_TYPE.ENUM);
-		passAutoLine = (boolean) parser.getKeyByPath("auto/crossLineAfter", BASIC_TYPE.BOOL);
+		autoSelect = (EnumPair)parser.getKeyByPath("auto/mode", BasicType.ENUM);
+		passAutoLine = (boolean) parser.getKeyByPath("auto/crossLineAfter", BasicType.BOOL);
 		
 		
 	}
 	
 	
-	public void execAuto()
+	protected void initialize()
 	{
 		log.info("===============================================================================");
 		log.info("============================== Starting Auto... ===============================");
@@ -175,7 +185,7 @@ public class Autonomous
 		
 		log.info("Approaching gear peg...");
 		Robot.drive.drive_G1xyCartesian(-1*approachDist, 0, 0);
-		Robot.gear.dropGear();
+		(new DropGear()).start();
 		Robot.drive.drive_G1xyCartesian(approachDist, 0, 0);
 		
 	}	
@@ -198,7 +208,7 @@ public class Autonomous
 		
 		log.info("Dropping gear...");
 		Robot.drive.drive_G1xyCartesian(-1*sideGearApproachDist, 0, 0);
-		Robot.gear.dropGear();
+		(new DropGear()).start();
 		Robot.drive.drive_G1xyCartesian(sideGearApproachDist, 0, 0);
 	}
 	
@@ -220,7 +230,15 @@ public class Autonomous
 		
 		log.info("Depositing gear");
 		Robot.drive.drive_G1xyCartesian(-1*sideGearApproachDist, 0, 0);
-		Robot.gear.dropGear();
+		(new DropGear()).start();
+		
 		Robot.drive.drive_G1xyCartesian(sideGearApproachDist, 0, 0);
+	}
+
+
+	@Override
+	protected boolean isFinished() 
+	{
+		return false;
 	}
 }

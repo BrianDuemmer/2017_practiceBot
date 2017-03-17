@@ -9,7 +9,8 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.PIDData;
 
 import com.ctre.CANTalon;
 
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
+import org.usfirst.frc.team223.robot.Robot;
 
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
@@ -148,7 +149,7 @@ public class Shooter extends Subsystem
 
 
 		// parse / allocate objects
-		this.shooterTargetRPM = (Double)parser.getKeyByPath("Shooter/wheels/targetSpeed", BASIC_TYPE.DOUBLE);
+		this.shooterTargetRPM = (Double)parser.getKeyByPath("Shooter/wheels/targetSpeed", BasicType.DOUBLE);
 
 		this.shooterMotorData = parser.parseMotor("Shooter/wheels/motor");
 		this.shooterMotor = (CANTalon) allocator.allocateMotor(this.shooterMotorData);
@@ -222,10 +223,42 @@ public class Shooter extends Subsystem
 	{
 		return shooterMotor.getEncPosition() * shooterEncoderData.distPerCount;
 	}
-
-
-
-
-
+	
+	
+	/**
+	 * Brings the shooter up to speed. This is non-blocking
+	 */
+	public void bringUpToSpeed()
+	{
+		log.info("Bringing Shooter up to speed..");
+		
+		shooterPID.setSetpoint(shooterTargetRPM);
+		shooterPID.reset();
+	}
+	
+	
+	
+	/**
+	 * Turns off the shooter. non-blocking.
+	 */
+	public void spinDown()
+	{
+		log.info("Spinning down shooter...");
+		shooterPID.disable();
+		shooterMotor.set(0);
+	}
+	
+	
+	/**
+	 * Checks if the shooter wheel is up to speed
+	 * @return true if the wheel is up to speed
+	 */
+	public boolean isUpToSpeed()
+	{
+		return Math.abs(getShooterRPM() - shooterTargetRPM) / shooterTargetRPM < 0.1;
+	}
+	
+	
+	
 }
 

@@ -6,7 +6,10 @@ import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive.driveType;
 import edu.wpi.first.wpilibj.command.Command;
 
 /**
- *
+ * Old school method for G2Arc interpolation. This one is blocking and can cause some nasty 
+ * hangups and highly erratic behavior if not properly shut down
+ * 
+ * @deprecated Do not use under any circumstance!! use {@link G2ArcMovement} instead!
  */
 public class G2ArcMovement_old extends Command 
 {

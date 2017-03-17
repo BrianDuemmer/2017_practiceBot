@@ -32,7 +32,7 @@ public class GXMLparser
 	private XPath xpath;
 	
 	// Types that can be parsed in GXML
-	public enum BASIC_TYPE
+	public enum BasicType
 	{
 		DOUBLE,
 		INT,
@@ -98,7 +98,7 @@ public class GXMLparser
 	 * Parses a single key out of the xml file, 
 	 * @return an {@link Object} that contains the key data. Cast it to a double, int, etc. as needed.
 	 */
-	public Object getKeyByPath(String path, BASIC_TYPE type)
+	public Object getKeyByPath(String path, BasicType type)
 	{
 		// Object that will be returned
 		Object ret = null;
@@ -120,19 +120,19 @@ public class GXMLparser
 			data = key.getTextContent();
 			
 			// Create a new object with type corresponding to the type argument, only if data isn't null
-			if(type == BASIC_TYPE.BOOL)
+			if(type == BasicType.BOOL)
 				ret = new Boolean(data);
 			
-			if(type == BASIC_TYPE.INT)
+			if(type == BasicType.INT)
 				ret = new Integer(data);
 			
-			if(type == BASIC_TYPE.DOUBLE)
+			if(type == BasicType.DOUBLE)
 				ret = new Double(data);
 			
-			if(type == BASIC_TYPE.STRING)
+			if(type == BasicType.STRING)
 				ret = data;
 			
-			if(type == BASIC_TYPE.ENUM)
+			if(type == BasicType.ENUM)
 			{
 				int val = new Integer(data);
 				ret = new EnumPair(key.getAttributes().getNamedItem("sel").getTextContent(), val);
@@ -149,19 +149,19 @@ public class GXMLparser
 		// if ret is null, return the default value
 		if(ret == null)
 		{
-			if(type == BASIC_TYPE.BOOL)
+			if(type == BasicType.BOOL)
 				return false;
 			
-			else if(type == BASIC_TYPE.DOUBLE)
+			else if(type == BasicType.DOUBLE)
 				return 0.0;
 			
-			else if(type == BASIC_TYPE.ENUM)
+			else if(type == BasicType.ENUM)
 				return new EnumPair("", 0);
 			
-			else if(type == BASIC_TYPE.INT)
+			else if(type == BasicType.INT)
 				return 0;
 			
-			else if(type == BASIC_TYPE.STRING)
+			else if(type == BasicType.STRING)
 				return "";
 			
 			else
@@ -182,7 +182,7 @@ public class GXMLparser
 	 * Add a cast statement to cast it to whatever type that was parsed
 	 * 
 	 */
-	public Object getElementByName(String name, Node parent, BASIC_TYPE type)
+	public Object getElementByName(String name, Node parent, BasicType type)
 	{
 		// if parent is null, print an error message and return null
 		if(parent == null)
@@ -224,7 +224,7 @@ public class GXMLparser
 			dataVal = child.getTextContent();
 			
 			// Parse it as the proper value
-			if(typeVal.equals("DBL") || typeVal.equals("SGL") || typeVal.equals("EXT") && type == BASIC_TYPE.DOUBLE)
+			if(typeVal.equals("DBL") || typeVal.equals("SGL") || typeVal.equals("EXT") && type == BasicType.DOUBLE)
 			{
 				ret = new Double(dataVal);
 			}
@@ -238,26 +238,26 @@ public class GXMLparser
 					typeVal.equals("I16") || 
 					typeVal.equals("I32") || 
 					typeVal.equals("I64") &&
-					type == BASIC_TYPE.INT
+					type == BasicType.INT
 				)
 			{
 				ret = new Integer(dataVal);
 			}
 			
 			
-			if(typeVal.equals("String") || typeVal.equals("Path") && type == BASIC_TYPE.STRING)
+			if(typeVal.equals("String") || typeVal.equals("Path") && type == BasicType.STRING)
 			{
 				ret = dataVal;
 			}
 			
 			
-			if(typeVal.equals("Bool") && type == BASIC_TYPE.BOOL)
+			if(typeVal.equals("Bool") && type == BasicType.BOOL)
 			{
 				ret = new Boolean(dataVal);
 			}
 			
 
-			if(typeVal.equals("Enum U8") || typeVal.equals("Enum U16") || typeVal.equals("Enum U32") && type == BASIC_TYPE.ENUM)
+			if(typeVal.equals("Enum U8") || typeVal.equals("Enum U16") || typeVal.equals("Enum U32") && type == BasicType.ENUM)
 			{
 				String sel = child.getAttributes().getNamedItem("sel").getTextContent();
 				ret = new EnumPair(sel, new Integer(dataVal));
@@ -275,19 +275,19 @@ public class GXMLparser
 		logger.warn("Failed to find child \"" + name + "\" under parent \"" + parent.getBaseURI() + "\"");
 		
 		// return the default value for the specified type
-		if(type == BASIC_TYPE.DOUBLE)
+		if(type == BasicType.DOUBLE)
 			return new Double(0);
 		
-		if(type == BASIC_TYPE.BOOL)
+		if(type == BasicType.BOOL)
 			return new Boolean(false);
 		
-		if(type == BASIC_TYPE.ENUM)
+		if(type == BasicType.ENUM)
 			return new EnumPair("", -1);
 		
-		if(type == BASIC_TYPE.INT)
+		if(type == BasicType.INT)
 			return new Integer(0);
 		
-		if(type == BASIC_TYPE.STRING)
+		if(type == BasicType.STRING)
 			return "";
 		
 		//unreachable statement to satisfy compiler
@@ -325,15 +325,15 @@ public class GXMLparser
 			pidNode = (Node) pidExp.evaluate(doc, XPathConstants.NODE);
 			
 			// parse out the elements
-			data.kp = (Double)getElementByName("kp", pidNode, BASIC_TYPE.DOUBLE);
-			data.ki = (Double)getElementByName("ki", pidNode, BASIC_TYPE.DOUBLE);
-			data.kd = (Double)getElementByName("kd", pidNode, BASIC_TYPE.DOUBLE);
-			data.kf = (Double)getElementByName("kf", pidNode, BASIC_TYPE.DOUBLE);
-			data.period = (Double)getElementByName("period", pidNode, BASIC_TYPE.DOUBLE);
-			data.tolerance = (Double)getElementByName("tolerance", pidNode, BASIC_TYPE.DOUBLE);
-			data.min = (Double)getElementByName("min", pidNode, BASIC_TYPE.DOUBLE);
-			data.max = (Double)getElementByName("max", pidNode, BASIC_TYPE.DOUBLE);
-			data.continuous = (Boolean)getElementByName("continuous", pidNode, BASIC_TYPE.BOOL);
+			data.kp = (Double)getElementByName("kp", pidNode, BasicType.DOUBLE);
+			data.ki = (Double)getElementByName("ki", pidNode, BasicType.DOUBLE);
+			data.kd = (Double)getElementByName("kd", pidNode, BasicType.DOUBLE);
+			data.kf = (Double)getElementByName("kf", pidNode, BasicType.DOUBLE);
+			data.period = (Double)getElementByName("period", pidNode, BasicType.DOUBLE);
+			data.tolerance = (Double)getElementByName("tolerance", pidNode, BasicType.DOUBLE);
+			data.min = (Double)getElementByName("min", pidNode, BasicType.DOUBLE);
+			data.max = (Double)getElementByName("max", pidNode, BasicType.DOUBLE);
+			data.continuous = (Boolean)getElementByName("continuous", pidNode, BasicType.BOOL);
 			
 			// Say that we have finished parsing the PID
 			logger.info("Finished parsing PID at path \"" + path + "\"");
@@ -376,12 +376,12 @@ public class GXMLparser
 	
 			
 			// parse out the elements
-			data.brake = (Boolean)getElementByName("brake", motorNode, BASIC_TYPE.BOOL);
-			data.id = (Integer)getElementByName("id", motorNode, BASIC_TYPE.INT);
-			data.pdpChannel = (Integer)getElementByName("pdpChannel", motorNode, BASIC_TYPE.INT);
-			data.invert = (Boolean)getElementByName("invert", motorNode, BASIC_TYPE.BOOL);
-			data.maxOut = (Double)getElementByName("maxOut", motorNode, BASIC_TYPE.DOUBLE);
-			data.type = (EnumPair)getElementByName("type", motorNode, BASIC_TYPE.ENUM);
+			data.brake = (Boolean)getElementByName("brake", motorNode, BasicType.BOOL);
+			data.id = (Integer)getElementByName("id", motorNode, BasicType.INT);
+			data.pdpChannel = (Integer)getElementByName("pdpChannel", motorNode, BasicType.INT);
+			data.invert = (Boolean)getElementByName("invert", motorNode, BasicType.BOOL);
+			data.maxOut = (Double)getElementByName("maxOut", motorNode, BasicType.DOUBLE);
+			data.type = (EnumPair)getElementByName("type", motorNode, BasicType.ENUM);
 			
 			// Say that we have finished parsing the motor
 			logger.info("Finished parsing motor at path \"" + path + "\"");
@@ -427,11 +427,11 @@ public class GXMLparser
 			
 			
 			// parse out the elements
-			data.Achannel = (Integer)getElementByName("Achannel", encoderNode, BASIC_TYPE.INT);
-			data.Bchannel = (Integer)getElementByName("Bchannel", encoderNode, BASIC_TYPE.INT);
-			data.IDXchannel = (Integer)getElementByName("IDXchannel", encoderNode, BASIC_TYPE.INT);
-			data.invert = (Boolean)getElementByName("invert", encoderNode, BASIC_TYPE.BOOL);
-			data.distPerCount = (Double)getElementByName("distPerCount", encoderNode, BASIC_TYPE.DOUBLE);
+			data.Achannel = (Integer)getElementByName("Achannel", encoderNode, BasicType.INT);
+			data.Bchannel = (Integer)getElementByName("Bchannel", encoderNode, BasicType.INT);
+			data.IDXchannel = (Integer)getElementByName("IDXchannel", encoderNode, BasicType.INT);
+			data.invert = (Boolean)getElementByName("invert", encoderNode, BasicType.BOOL);
+			data.distPerCount = (Double)getElementByName("distPerCount", encoderNode, BasicType.DOUBLE);
 			
 			// Say that we have finished parsing the encoder
 			logger.info("Finished parsing encoder at path \"" + path + "\"");
@@ -475,9 +475,9 @@ public class GXMLparser
 			SolenoidNode = (Node) SolenoidExp.evaluate(doc, XPathConstants.NODE);
 			
 			// parse out the elements
-			data.invert = (Boolean)getElementByName("invert", SolenoidNode, BASIC_TYPE.BOOL);
-			data.port = (Integer)getElementByName("port", SolenoidNode, BASIC_TYPE.INT);
-			data.PCMid = (Integer)getElementByName("PCMid", SolenoidNode, BASIC_TYPE.INT);
+			data.invert = (Boolean)getElementByName("invert", SolenoidNode, BasicType.BOOL);
+			data.port = (Integer)getElementByName("port", SolenoidNode, BasicType.INT);
+			data.PCMid = (Integer)getElementByName("PCMid", SolenoidNode, BasicType.INT);
 			
 			// Say that we have finished parsing the Solenoid
 			logger.info("Finished parsing Solenoid at path \"" + path + "\"");
@@ -522,10 +522,10 @@ public class GXMLparser
 			limitNode = (Node) limitExp.evaluate(doc, XPathConstants.NODE);
 			
 			// parse out the elements
-			data.debounceTime = (Double)getElementByName("debounceTime", limitNode, BASIC_TYPE.DOUBLE);
-			data.id= (Integer)getElementByName("id", limitNode, BASIC_TYPE.INT);
-			data.interruptEdge = (EnumPair)getElementByName("interruptEdge", limitNode, BASIC_TYPE.ENUM);
-			data.normallyOpen = (Boolean)getElementByName("normallyOpen", limitNode, BASIC_TYPE.BOOL);
+			data.debounceTime = (Double)getElementByName("debounceTime", limitNode, BasicType.DOUBLE);
+			data.id= (Integer)getElementByName("id", limitNode, BasicType.INT);
+			data.interruptEdge = (EnumPair)getElementByName("interruptEdge", limitNode, BasicType.ENUM);
+			data.normallyOpen = (Boolean)getElementByName("normallyOpen", limitNode, BasicType.BOOL);
 			
 			// Say that we have finished parsing the limit
 			logger.info("Finished parsing limit at path \"" + path + "\"");
@@ -649,7 +649,7 @@ public class GXMLparser
 			data.rightData = parseDriveSide(path + "/rightSide");
 			data.anglePID = parsePID(path + "/anglePID");
 			data.distancePID = parsePID(path + "/distancePID");
-			data.wheelBaseWidth = (Double)getElementByName("wheelBaseWidth", tankCascadeNode, BASIC_TYPE.DOUBLE);
+			data.wheelBaseWidth = (Double)getElementByName("wheelBaseWidth", tankCascadeNode, BasicType.DOUBLE);
 			
 			// Say that we have finished parsing the TankCascadeController
 			logger.info("Finished parsing TankCascadeController at path \"" + path + "\"");

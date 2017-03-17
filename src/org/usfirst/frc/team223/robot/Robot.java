@@ -2,8 +2,9 @@ package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
 import org.usfirst.frc.team223.AdvancedX.RoboLogManagerBase;
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
 import org.usfirst.frc.team223.AdvancedX.vision.PiVisionClient;
+import org.usfirst.frc.team223.robot.auto.Autonomous;
 import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive;
 import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
 import org.usfirst.frc.team223.robot.gear.GearThing;
@@ -64,7 +65,6 @@ public class Robot extends IterativeRobot
 
 	private static NetworkTable nt;
 
-
 	/**
 	 * This function is run when the robot is first started up and should be
 	 * used for any initialization code.
@@ -79,18 +79,18 @@ public class Robot extends IterativeRobot
 
 
 		// Setup the AdvancedXManager, and add the reload() and free() methods
-		manager = new AdvancedXManager("/media/sda1/MainConfig.xml", logBase)
+		manager = new AdvancedXManager("/home/lvuser/MainConfig.xml", logBase)
 		{
 			@Override
 			public boolean load() 
 			{	
-				pdp = new PowerDistributionPanel((int) obtainParser().getKeyByPath("pdpID", BASIC_TYPE.INT));
+				pdp = new PowerDistributionPanel((int) obtainParser().getKeyByPath("pdpID", BasicType.INT));
 				
-				int visionPort = (int) obtainParser().getKeyByPath("VisionServer/port", BASIC_TYPE.INT);
-				String visionAddress = (String) obtainParser().getKeyByPath("VisionServer/address", BASIC_TYPE.STRING);
+				int visionPort = (int) obtainParser().getKeyByPath("VisionServer/port", BasicType.INT);
+				String visionAddress = (String) obtainParser().getKeyByPath("VisionServer/address", BasicType.STRING);
 				
 //				visionClient = new PiVisionClient(visionAddress, visionPort, this.getRoboLogger().getLogger("VisionClient"));
-				debugPin = new DigitalInput((int) obtainParser().getKeyByPath("debugPin", BASIC_TYPE.INT));
+				debugPin = new DigitalInput((int) obtainParser().getKeyByPath("debugPin", BasicType.INT));
 				
 				intake = new Intake(manager);
 				hangar = new Hangar(manager);
@@ -154,23 +154,35 @@ public class Robot extends IterativeRobot
 	}
 
 
+	static boolean prevFinished;
 	
 	@Override
 	public void autonomousInit() 
 	{
 		generalInit();
-		auto.execAuto();
+		auto.runAuto();
+		
+		//reset on each auto init
+		prevFinished = false;
 	}
 
 	
 	
-	/**
-	 * This function is called periodically during autonomous
-	 */
 	@Override
-	public void autonomousPeriodic() {
+	public void autonomousPeriodic() 
+	{
 		Scheduler.getInstance().run();
 		generalPeriodic();
+		
+		// run only once after auto finishes
+		if(!auto.autoCommand.isRunning() && !prevFinished)
+		{
+			prevFinished = true;
+			
+			log.info("===============================================================================");
+			log.info("=============================== Finished Auto =================================");
+			log.info("===============================================================================");
+		}
 	}
 
 	

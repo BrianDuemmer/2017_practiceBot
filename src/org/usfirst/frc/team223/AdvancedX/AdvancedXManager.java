@@ -4,7 +4,7 @@ package org.usfirst.frc.team223.AdvancedX;
 import org.usfirst.frc.team223.AdvancedX.robotParser.Destroyer;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
-import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BASIC_TYPE;
+import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
 
 import edu.wpi.first.wpilibj.command.Scheduler;
 import edu.wpi.first.wpilibj.networktables.NetworkTable;
@@ -313,7 +313,7 @@ public abstract class AdvancedXManager implements Runnable
 				nt.putBoolean(handshakeKey, false);
 
 				// update the filename key to the value of the FILE_NAME attribute of the document.
-				nt.putString(fileNameKey, (String)this.obtainParser().getKeyByPath("FILE_NAME", BASIC_TYPE.STRING));
+				nt.putString(fileNameKey, (String)this.obtainParser().getKeyByPath("FILE_NAME", BasicType.STRING));
 
 				// make sure firstRun is false
 				this.firstRun = false;

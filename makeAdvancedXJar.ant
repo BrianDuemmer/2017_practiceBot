@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project name ="makeAdvancedX" default="make">
+	
+	<import file="build.xml"/>
 
-	<target name="make">
+	<target name="make" depends="compile">
 		
 		<delete failonerror="false">
 			<fileset file="${basedir}/AdvancedX.jar" />

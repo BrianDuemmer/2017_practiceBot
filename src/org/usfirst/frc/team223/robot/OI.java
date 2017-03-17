@@ -2,8 +2,12 @@ package org.usfirst.frc.team223.robot;
 
 import org.usfirst.frc.team223.AdvancedX.utility.SmartControlStick;
 import org.usfirst.frc.team223.robot.driveTrain.DriveTrainAbort;
-import org.usfirst.frc.team223.robot.driveTrain.G1XYMovement_old;
-import org.usfirst.frc.team223.robot.driveTrain.G2ArcMovement_old;
+import org.usfirst.frc.team223.robot.driveTrain.G1FwdMovement;
+import org.usfirst.frc.team223.robot.driveTrain.G1StrafeMovement;
+import org.usfirst.frc.team223.robot.driveTrain.G2ArcMovement;
+import org.usfirst.frc.team223.robot.gear.AcceptGear;
+import org.usfirst.frc.team223.robot.gear.DropGear;
+
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.buttons.JoystickButton;
 
@@ -83,17 +87,15 @@ public OI() {
 		stick_oR.setParams(false, true, 0.1, 1);
 		
 		/////////////////////////// Driver Buttons ////////////////////////////
-		button_dA.whenActive(new G1XYMovement_old(10, 0, false));
-		button_dB.whenActive(new G1XYMovement_old(-10, 0, false));
-//		button_dX.whenActive(new G2ArcMovement_old(0.00001, 90, true));
-		button_dX.whenActive(new G2ArcMovement_old(3, 90, true));
-		button_dY.whenActive(new G2ArcMovement_old(0.00001, -90, true));
 		button_dBack.whileActive(new DriveTrainAbort());
+		button_dA.whenPressed(new G1FwdMovement(7, 0, true, 6));
+		button_dB.whenActive(new G1StrafeMovement(2.5, 0, 7));
+		button_dX.whenActive(new G2ArcMovement(0.00001, 90, 0, true, 5));
 
 		
 		////////////////////////// Operator Buttons ///////////////////////////
-//		button_oR.whileActive(new ShooterNoVision());
-//s		button_oL.whileActive(new HangControl());
+		button_oB.whenActive(new DropGear());
+		button_oA.whileActive(new AcceptGear());
 		
 
 
