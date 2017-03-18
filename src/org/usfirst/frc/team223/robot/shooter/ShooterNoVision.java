@@ -12,24 +12,25 @@ public class ShooterNoVision extends Command
 
 	private boolean upToSpeed;
 	private boolean prevEnabled = false;
+	private boolean force;
 
-	public ShooterNoVision()
+	public ShooterNoVision()   { this(false); }
+	
+	public ShooterNoVision(boolean force)
 	{
+		this.force = force;
 		requires(Robot.shooter);
-		//		requires(Robot.intake);
 	}
 
 
-	public void initialize()
-	{
-	}
+	public void initialize() {}
 
 
 	public void execute()
 	{
 
 		// Set the setpoint to the target RPMs and enable the PID
-		if(Robot.oi.operatorController.getRawAxis(3) > 0.75)
+		if(Robot.oi.operatorController.getRawAxis(3) > 0.75 || force)
 		{
 			if(!prevEnabled) // rising edge of button
 			{

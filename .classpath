@@ -20,5 +20,6 @@
 	</classpathentry>
 	<classpathentry kind="var" path="USERLIBS_DIR/microlog-logger-core-2.3.5.jar"/>
 	<classpathentry kind="var" path="USERLIBS_DIR/navx_frc.jar"/>
+	<classpathentry kind="var" path="USERLIBS_DIR/CTRLib-javadoc.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

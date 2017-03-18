@@ -102,7 +102,9 @@ public class Autonomous
 		gear3CrossDist = (double) parser.getKeyByPath("auto/gear3/lineCrossDist", BasicType.DOUBLE);
 		
 		// boiler specific
-		
+		boilerFwdDist = (double) parser.getKeyByPath("auto/boiler/fwdDist", BasicType.DOUBLE);
+		boilerApproachDist = (double) parser.getKeyByPath("auto/boiler/approachDist", BasicType.DOUBLE);
+		boilerTurnAngle = (double) parser.getKeyByPath("auto/boiler/turnAngle", BasicType.DOUBLE);
 		
 	}
 	

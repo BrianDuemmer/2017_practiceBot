@@ -6,6 +6,7 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
 import org.usfirst.frc.team223.AdvancedX.vision.PiVisionClient;
 import org.usfirst.frc.team223.robot.auto.Autonomous;
 import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive;
+import org.usfirst.frc.team223.robot.driveTrain.ButterflyHDrive.driveType;
 import org.usfirst.frc.team223.robot.driveTrain.DriveFromController;
 import org.usfirst.frc.team223.robot.gear.GearThing;
 import org.usfirst.frc.team223.robot.hangar.HangControl;
@@ -191,6 +192,11 @@ public class Robot extends IterativeRobot
 	public void teleopInit() 
 	{
 		log.info("Entering Teleop...");
+		
+		// prep everything for teleop
+		shooter.spinDown();
+		drive.setDriveType(driveType.FULL_OMNI, true);
+		
 		generalInit();
 	}
 
