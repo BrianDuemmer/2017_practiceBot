@@ -10,8 +10,6 @@ import org.usfirst.frc.team223.AdvancedX.robotParser.PIDData;
 import com.ctre.CANTalon;
 
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
-import org.usfirst.frc.team223.robot.Robot;
-
 import edu.wpi.first.wpilibj.PIDController;
 import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
@@ -233,7 +231,7 @@ public class Shooter extends Subsystem
 		log.info("Bringing Shooter up to speed..");
 		
 		shooterPID.setSetpoint(shooterTargetRPM);
-		shooterPID.reset();
+		shooterPID.enable();
 	}
 	
 	
@@ -244,7 +242,7 @@ public class Shooter extends Subsystem
 	public void spinDown()
 	{
 		log.info("Spinning down shooter...");
-		shooterPID.disable();
+		shooterPID.reset();
 		shooterMotor.set(0);
 	}
 	

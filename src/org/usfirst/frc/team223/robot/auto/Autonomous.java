@@ -82,6 +82,7 @@ public class Autonomous
 		// parse common keys
 		autoSelect = (EnumPair)parser.getKeyByPath("auto/mode", BasicType.ENUM);
 		passAutoLine = (boolean) parser.getKeyByPath("auto/crossLineAfter", BasicType.BOOL);
+		lineCrossDist = (double) parser.getKeyByPath("auto/gear1/lineCrossDist", BasicType.DOUBLE);
 		
 		towerDist = (double) parser.getKeyByPath("auto/general/towerDist", BasicType.DOUBLE);
 		towerAngle = (double) parser.getKeyByPath("auto/general/towerAngle", BasicType.DOUBLE);
