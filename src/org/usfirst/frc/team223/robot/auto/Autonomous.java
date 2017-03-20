@@ -151,7 +151,7 @@ public class Autonomous
 				
 			case("boiler"): // add me
 				log.info("boiler");
-				autoCommand = new LogMsg(log, Level.ERROR, "Boiler auto doesn't exist!!!1!");
+				autoCommand = new BoilerAuto();
 				break;
 
 			

@@ -21,17 +21,14 @@ public class Gear3Auto extends CommandGroup
     public Gear3Auto() 
     {
     	addSequential(new LogMsg(a.log, Level.INFO, "Beginning Tower approach..."));
-    	addSequential(new G1FwdMovement(-1*a.distToGear3, 0, true)); // drive to tower
+    	addSequential(new G1FwdMovement(a.distToGear3, 0, true)); // drive to tower
     	
     	addSequential(new LogMsg(a.log, Level.INFO, "Turning onto tower..."));
-    	addSequential(new G2ArcMovement(0.000001, a.towerAngle, 0, true, a.turnTimeout)); // turn to tower
+    	addSequential(new G2ArcMovement(0.000001, -1*a.towerAngle, 0, true, a.turnTimeout)); // turn to tower
     	
-    	addSequential(new LogMsg(a.log, Level.INFO, "Strafing to peg..."));
-    	addSequential(new G1StrafeMovement(a.gear3ApproachDist, 0, 3)); // approach peg
+    	addSequential(new LogMsg(a.log, Level.INFO, "Approaching peg..."));
+    	addSequential(new G1FwdMovement(a.gear3ApproachDist, 0, true)); // approach peg
     	
-    	addSequential(new DropGear()); // Drop the gear
-    	
-    	addSequential(new LogMsg(a.log, Level.INFO, "pulling out..."));
-    	addSequential(new G1StrafeMovement(-1*a.gear3ApproachDist, 0, 3)); // pull away from peg
+    	addSequential(new LogMsg(a.log, Level.INFO, "Dropping Gear..."));
     }
 }
