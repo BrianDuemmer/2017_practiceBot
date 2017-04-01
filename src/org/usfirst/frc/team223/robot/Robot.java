@@ -137,7 +137,6 @@ public class Robot extends IterativeRobot
 	public void disabledInit() 
 	{
 		log.info("Entering Disabled mode...");
-		generalInit();
 	}
 
 	
@@ -237,8 +236,7 @@ public class Robot extends IterativeRobot
 	
 	public void generalInit()
 	{
-		// set the drive type
-//		drive.setDriveType(oi.button_dR.get()  ?  driveType.FULL_TRACTION : driveType.FULL_OMNI, true);
+		gear.frontMech.set(false);
 	}
 	
 }

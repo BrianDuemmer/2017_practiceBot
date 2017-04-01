@@ -19,19 +19,19 @@ public class ShooterManual extends Command {
     	Robot.shooter.augerMotor.set(Robot.oi.stick_oL.getX());
     	
     	if(Robot.oi.button_oA.get())
-    		Robot.shooter.shooterMotor.set(0.25);
+    		Robot.shooter.shooterMotors.setRawOutput(0.25);
     	
     	else if(Robot.oi.button_oB.get())
-    		Robot.shooter.shooterMotor.set(0.5);
+    		Robot.shooter.shooterMotors.setRawOutput(0.5);
     	
     	else if(Robot.oi.button_oX.get())
-    		Robot.shooter.shooterMotor.set(0.75);
+    		Robot.shooter.shooterMotors.setRawOutput(0.75);
     	
     	else if(Robot.oi.button_oY.get())
-    		Robot.shooter.shooterMotor.set(1);
+    		Robot.shooter.shooterMotors.setRawOutput(1);
     	
     	else
-    		Robot.shooter.shooterMotor.set(Robot.oi.stick_oR.getX());
+    		Robot.shooter.shooterMotors.setRawOutput(Robot.oi.stick_oR.getX());
     }
 
     protected boolean isFinished() {

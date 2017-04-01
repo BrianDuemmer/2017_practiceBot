@@ -127,7 +127,7 @@ public class DriveSide extends PIDSubsystem implements Freeable
 	public void setVelocityPIDSource(PIDSource src)
 	{   
 		velocityPidSrc = src;   
-		velocityPidSrc.setPIDSourceType(PIDSourceType.kRate);
+//		velocityPidSrc.setPIDSourceType(PIDSourceType.kRate);
 	}
 	
 	
@@ -189,6 +189,11 @@ public class DriveSide extends PIDSubsystem implements Freeable
 			// enable the PID
 			this.enable();
 		}
+		
+		else
+		{
+			logger.error("No PIDSource set for driveside");
+		}
 	}
 	
 	
@@ -219,7 +224,9 @@ public class DriveSide extends PIDSubsystem implements Freeable
 		
 		// only output if the PID is enabled
 		if(this.getPIDController().isEnabled())
+		{
 			output(output);
+		}
 		
 	}
 	

@@ -14,12 +14,15 @@ public class GearThing extends Subsystem
 {
 	// time that the robot will dwell when dropping a gear
 	double dropTime;
+	double frontDropTime;
 	
 	SolenoidData puncherData;
 	Solenoid puncher;
 	
 	SolenoidData jawsData;
 	Solenoid jaws;
+	SolenoidData frontMechData;
+	public Solenoid frontMech;
 	
 	Logger log;
 
@@ -32,9 +35,11 @@ public class GearThing extends Subsystem
 		// parse data
 		log.info("Parsing gear data...");
 		dropTime = (Double) parser.getKeyByPath("Gear/dropTime", BasicType.DOUBLE);
+		frontDropTime = (Double) parser.getKeyByPath("Gear/frontDropTime", BasicType.DOUBLE);
 		
 		puncherData = parser.parseSolenoid("Gear/puncher");
 		jawsData = parser.parseSolenoid("Gear/jaws");
+		frontMechData = parser.parseSolenoid("Gear/frontMech");
 		
 		log.info("finished parsing gear data");
 		
@@ -45,11 +50,19 @@ public class GearThing extends Subsystem
 		GXMLAllocator allocator = manager.obtainAllocator();
 		puncher = allocator.allocateSolenoid(puncherData);
 		jaws =  allocator.allocateSolenoid(jawsData);
+		frontMech = allocator.allocateSolenoid(frontMechData);
 		
 		log.info("Finished allocating gear data");
+		
+		frontMech.set(false);
 	}
 
 	@Override
 	protected void initDefaultCommand() {}
 
 }
+
+
+
+
+

@@ -42,16 +42,33 @@ public class Autonomous
 	
 	double lineCrossDist = 12;
 	
-	double boilerFwdDist = 1;
+	double boilerDistA = 1;
+	double boilerDistB = 1;
 	double boilerTurnAngle = 30;
 	double boilerApproachDist = 1;
-	double boilerDwellTime = 8;
+	
+	double sideGearBoilerRetract;
+	double sideGearBoilerTurn;
+	
+	double centerGearBoilerRetract;
+	double centerGearBoilerTurn;
 	
 	double turnTimeout = 5;
 	
 	EnumPair autoSelect;
 	boolean passAutoLine;
+	boolean boilerAfter;
 	
+	double centerHopper_turn1;
+	double centerHopper_dwell;
+	double centerHopper_turn2;
+	double centerHopper_retract;
+	
+	double bNoH_retract;
+	double bNoH_turn;
+
+
+
 	// utility
 	Logger log;
 	
@@ -59,15 +76,7 @@ public class Autonomous
 	Alliance overrideAlliance = Alliance.Red;
 	
 	// auto that will run. Initialized to a safe default
-	public Command autoCommand = new Command()
-			{
-				@Override
-				protected void initialize() { log.fatal("This is the default auto. This should never run!"); }
-				
-				@Override
-				protected boolean isFinished() { return true; }
-		
-			};
+	public Command autoCommand = new LogMsg(log, Level.FATAL, "This is the default auto. This should never run!");
 	
 	
 	/**
@@ -83,10 +92,16 @@ public class Autonomous
 		autoSelect = (EnumPair)parser.getKeyByPath("auto/mode", BasicType.ENUM);
 		passAutoLine = (boolean) parser.getKeyByPath("auto/crossLineAfter", BasicType.BOOL);
 		lineCrossDist = (double) parser.getKeyByPath("auto/gear1/lineCrossDist", BasicType.DOUBLE);
-		
 		towerDist = (double) parser.getKeyByPath("auto/general/towerDist", BasicType.DOUBLE);
 		towerAngle = (double) parser.getKeyByPath("auto/general/towerAngle", BasicType.DOUBLE);
 		towerWidth = (double) parser.getKeyByPath("auto/general/towerWidth", BasicType.DOUBLE);
+		boilerAfter = (boolean) parser.getKeyByPath("auto/general/boilerAfter", BasicType.BOOL);
+		EnumPair alliance = (EnumPair) parser.getKeyByPath("auto/overrideAlliance", BasicType.ENUM);
+		
+		if(alliance.selection.equals("Red"))
+			overrideAlliance = Alliance.Red;
+		else
+			overrideAlliance = Alliance.Blue;
 		
 		// gear 1 specific
 		distToGear1 = (double) parser.getKeyByPath("auto/gear1/fwdDist", BasicType.DOUBLE);
@@ -102,10 +117,27 @@ public class Autonomous
 		gear3CrossDist = (double) parser.getKeyByPath("auto/gear3/lineCrossDist", BasicType.DOUBLE);
 		
 		// boiler specific
-		boilerFwdDist = (double) parser.getKeyByPath("auto/boiler/fwdDist", BasicType.DOUBLE);
+		boilerDistA = (double) parser.getKeyByPath("auto/boiler/distA", BasicType.DOUBLE);
+		boilerDistB = (double) parser.getKeyByPath("auto/boiler/distB", BasicType.DOUBLE);
 		boilerApproachDist = (double) parser.getKeyByPath("auto/boiler/approachDist", BasicType.DOUBLE);
 		boilerTurnAngle = (double) parser.getKeyByPath("auto/boiler/turnAngle", BasicType.DOUBLE);
 		
+		// boiler / gear keys
+		sideGearBoilerRetract = (double) parser.getKeyByPath("auto/boiler/gearSide/retract", BasicType.DOUBLE);
+		sideGearBoilerTurn = (double) parser.getKeyByPath("auto/boiler/gearSide/turn", BasicType.DOUBLE);
+		
+		centerGearBoilerRetract = (double) parser.getKeyByPath("auto/boiler/centerGear/retract", BasicType.DOUBLE);
+		centerGearBoilerTurn = (double) parser.getKeyByPath("auto/boiler/centerGear/turn", BasicType.DOUBLE);
+		
+		// boiler no hopper
+		centerHopper_turn1 = (double) parser.getKeyByPath("auto/centerGearBoiler/turn1", BasicType.DOUBLE);
+		centerHopper_dwell = (double) parser.getKeyByPath("auto/centerGearBoiler/dwell", BasicType.DOUBLE);
+		centerHopper_turn2 = (double) parser.getKeyByPath("auto/centerGearBoiler/turn2", BasicType.DOUBLE);
+		centerHopper_retract = (double) parser.getKeyByPath("auto/centerGearBoiler/retract", BasicType.DOUBLE);
+		
+		bNoH_retract = (double) parser.getKeyByPath("auto/bNoH/retract", BasicType.DOUBLE);
+		bNoH_turn = (double) parser.getKeyByPath("auto/bNoH/turn", BasicType.DOUBLE);
+
 	}
 	
 	/**
@@ -123,7 +155,7 @@ public class Autonomous
 		alliance = DriverStation.getInstance().getAlliance();
 		if(alliance == Alliance.Invalid)
 			alliance = overrideAlliance;
-		log.info("Alliance is: " +alliance.toString());	
+		log.info("Alliance is: " + alliance.toString());	
 		
 		
 		// Select the proper auto
@@ -149,9 +181,14 @@ public class Autonomous
 				autoCommand = new G1FwdMovement(lineCrossDist, 0, true);
 				break;
 				
-			case("boiler"): // add me
-				log.info("boiler");
-				autoCommand = new BoilerAuto();
+			case("boilerHopper"): 
+				log.info("boilerHopper");
+				autoCommand = new BoilerHopperAuto();
+				break;
+				
+			case("centerGearBoiler"): 
+				log.info("CenterGearBoiler");
+				autoCommand = new CenterGearBoiler();
 				break;
 
 			

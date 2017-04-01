@@ -152,8 +152,8 @@ public class ButterflyHDrive extends Subsystem implements OmniDirectionalDrive, 
 					manager.getNt().putNumberArray(rightSideCurrentKey, rightDriveSide.getCurrent(Robot.pdp, rightSideData));
 				} catch(Exception e) // log the error and wait for a bit
 				{
-					log.error("Exception in Drive Periodic: ,e");
-					Timer.delay(1);
+					log.error("Exception in Drive Periodic: ", e);
+					Timer.delay(10);
 				}
 			}
 		}

@@ -1,17 +1,15 @@
 package org.usfirst.frc.team223.robot.shooter;
 
 import org.usfirst.frc.team223.AdvancedX.AdvancedXManager;
-import org.usfirst.frc.team223.AdvancedX.robotParser.EncoderData;
+import org.usfirst.frc.team223.AdvancedX.motionControl.DriveSide;
+import org.usfirst.frc.team223.AdvancedX.robotParser.DriveSideData;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLAllocator;
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser;
 import org.usfirst.frc.team223.AdvancedX.robotParser.MotorData;
-import org.usfirst.frc.team223.AdvancedX.robotParser.PIDData;
 
 import com.ctre.CANTalon;
 
 import org.usfirst.frc.team223.AdvancedX.robotParser.GXMLparser.BasicType;
-import edu.wpi.first.wpilibj.PIDController;
-import edu.wpi.first.wpilibj.PIDOutput;
 import edu.wpi.first.wpilibj.PIDSource;
 import edu.wpi.first.wpilibj.PIDSourceType;
 import edu.wpi.first.wpilibj.SpeedController;
@@ -31,30 +29,17 @@ public class Shooter extends Subsystem
 	public static final String shooterSetpointKey = "shooterSetpoint";
 	public static final String shooterEnabledKey = "shooterOn";
 	public static final String shooterOutputKey = "shooterOutput";
+	
+	public static final double augerHighTime = 4;
+	public static final double augerLowTime = 1;
+	
 
 
-	private EncoderData shooterEncoderData;
-	MotorData shooterMotorData;
-	CANTalon shooterMotor;
-
-	MotorData augerMotorData;
+	DriveSideData shooterData;
+	DriveSide shooterMotors;
+	
+	MotorData augerData;
 	SpeedController augerMotor;
-
-
-	
-
-	// PID utilities
-	private PIDController shooterPID;
-	private PIDData shooterPIDData;
-	
-	// PIDOutput for the shooter
-	private PIDOutput shooterOutput = new PIDOutput()
-	{
-		@Override
-		public void pidWrite(double output) {
-			shooterMotor.set(output);
-		}
-	};
 	
 	
 	
@@ -106,12 +91,10 @@ public class Shooter extends Subsystem
 
 					// report some stuff via NT
 					manager.getNt().putNumber(shooterSpeedkey, getShooterRPM());
-					manager.getNt().putNumber(shooterPosKey, getShooterPos());
-					manager.getNt().putNumber(shooterSetpointKey, getShooterPID().getSetpoint());
-					manager.getNt().putBoolean(shooterEnabledKey, getShooterPID().isEnabled());
-					manager.getNt().putNumber(shooterOutputKey, Math.abs(shooterMotor.get()));
-					manager.getNt().putNumber("ShootKi", shooterPID.getI());
-
+					manager.getNt().putNumber(shooterSetpointKey, shooterMotors.getSetpoint());
+					manager.getNt().putBoolean(shooterEnabledKey, shooterMotors.getPIDController().isEnabled());
+					manager.getNt().putNumber(shooterOutputKey, Math.abs(shooterMotors.getMotors().get(0).get()));
+					manager.getNt().putNumber("shootErr", shooterMotors.getPIDController().getError());
 				}
 			} catch(Exception e)
 			{
@@ -147,21 +130,14 @@ public class Shooter extends Subsystem
 
 
 		// parse / allocate objects
-		this.shooterTargetRPM = (Double)parser.getKeyByPath("Shooter/wheels/targetSpeed", BasicType.DOUBLE);
-
-		this.shooterMotorData = parser.parseMotor("Shooter/wheels/motor");
-		this.shooterMotor = (CANTalon) allocator.allocateMotor(this.shooterMotorData);
-
-		this.shooterEncoderData = parser.parseEncoder("Shooter/wheels/encoder");
-
-		allocator.allocateCANEncoder(this.shooterEncoderData, this.shooterMotor);
-
-		this.augerMotorData = parser.parseMotor("Shooter/auger/motor");
-		this.augerMotor = allocator.allocateMotor(this.augerMotorData);
-
-		this.shooterPIDData = parser.parsePID("Shooter/wheels/PID");
-
-		this.shooterPID = allocator.allocatePID(shooterPIDData, shooterSrc, shooterOutput);
+		this.shooterTargetRPM = (Double)parser.getKeyByPath("Shooter/targetSpeed", BasicType.DOUBLE);
+		this.shooterData = parser.parseDriveSide("Shooter/wheels");
+		this.augerData = parser.parseMotor("Shooter/auger/motor");
+		
+		this.shooterMotors = allocator.allocateDriveSide(shooterData, "Shooter");
+		this.augerMotor = allocator.allocateMotor(augerData);
+		
+		this.shooterMotors.setVelocityPIDSource(shooterSrc);
 
 		// start the periodic function
 		this.shooterPeriodic.start();
@@ -182,7 +158,7 @@ public class Shooter extends Subsystem
 
 		// log and shutdown
 		log.info("Attempting to free shooter...");
-		manager.destroy(shooterMotor);
+		manager.destroy(shooterMotors);
 		manager.destroy(augerMotor);
 		log.info("Finished freeing shooter");
 	}
@@ -199,28 +175,16 @@ public class Shooter extends Subsystem
 
 
 	/**
-	 * Obtains a reference to the shooter PID
-	 */
-	public PIDController getShooterPID() {   return shooterPID;   }
-
-
-
-	/**
 	 * gets the current speed of the shooter wheels, in RPMs
 	 */
 	public double getShooterRPM()
 	{
-		double speed = shooterMotor.getEncVelocity() * shooterEncoderData.distPerCount;
-		return speed;
+		double out = ((CANTalon)shooterMotors.getMotors().get(0)).getEncVelocity();
+		out *= shooterData.encoder.distPerCount * (shooterData.encoder.invert  ?  -1 : 1);
+		
+		return out;
 	}
-	
-	
-	
-	
-	public double getShooterPos()
-	{
-		return shooterMotor.getEncPosition() * shooterEncoderData.distPerCount;
-	}
+
 	
 	
 	/**
@@ -230,8 +194,7 @@ public class Shooter extends Subsystem
 	{
 		log.info("Bringing Shooter up to speed..");
 		
-		shooterPID.setSetpoint(shooterTargetRPM);
-		shooterPID.enable();
+		shooterMotors.setSetpoint(shooterTargetRPM);
 	}
 	
 	
@@ -242,8 +205,8 @@ public class Shooter extends Subsystem
 	public void spinDown()
 	{
 		log.info("Spinning down shooter...");
-		shooterPID.reset();
-		shooterMotor.set(0);
+		shooterMotors.setSetpoint(0);
+		shooterMotors.setRawOutput(0);
 	}
 	
 	
